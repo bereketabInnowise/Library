@@ -47,13 +47,13 @@ public class ConsoleInterface {
                     case 3 -> editBook();
                     case 4 -> deleteBook();
                     case 0 -> {
-                        System.out.println("Saving and exiting...");
+                        System.out.println(messageSource.getMessage("app.success.exit", null, locale));
                         return;
                     }
-                    default -> System.out.println("Invalid choice. Please enter a number between 0 and 4.");
+                    default -> System.out.println(messageSource.getMessage("app.error.choice.invalid", null, locale));
                 }
             } catch (NumberFormatException e) {
-                System.out.println(messageSource.getMessage("app.error.id.invalid", null, locale));
+                System.out.println(messageSource.getMessage("app.error.choice.invalid", null, locale));
             }
         }
     }
@@ -78,7 +78,16 @@ public class ConsoleInterface {
         if (books.isEmpty()) {
             System.out.println(messageSource.getMessage("app.book.none", null, locale));
         } else {
-            books.forEach(System.out::println);
+            String titleLabel = messageSource.getMessage("book.field.title", null, locale);
+            String authorLabel = messageSource.getMessage("book.field.author", null, locale);
+            String descLabel = messageSource.getMessage("book.field.description", null, locale);
+            for (Book book : books) {
+                System.out.printf("{id=%d, %s='%s', %s='%s', %s='%s'}%n",
+                        book.getId(),
+                        titleLabel, book.getTitle(),
+                        authorLabel, book.getAuthor(),
+                        descLabel, book.getDescription());
+            }
         }
     }
 
@@ -111,7 +120,16 @@ public class ConsoleInterface {
         }
         // Get the current book
         Book currentBook = bookService.getBookById(id);
-        System.out.println(messageSource.getMessage("app.edit.current", new Object[]{currentBook}, locale));
+        String titleLabel = messageSource.getMessage("book.field.title", null, locale);
+        String authorLabel = messageSource.getMessage("book.field.author", null, locale);
+        String descLabel = messageSource.getMessage("book.field.description", null, locale);
+        System.out.println(messageSource.getMessage("app.edit.current", new Object[]{
+                String.format("id=%d, %s='%s', %s='%s', %s='%s'",
+                        currentBook.getId(),
+                        titleLabel, currentBook.getTitle(),
+                        authorLabel, currentBook.getAuthor(),
+                        descLabel, currentBook.getDescription())
+        }, locale));
         System.out.println(messageSource.getMessage("app.edit.instruction", null, locale));
 
         // Title
@@ -145,7 +163,5 @@ public class ConsoleInterface {
         }
         bookService.deleteBook(id);
         System.out.println(messageSource.getMessage("app.success.delete", null, locale));
-
-        System.out.println("Book deleted successfully!");
     }
 }
