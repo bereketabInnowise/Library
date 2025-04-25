@@ -19,20 +19,13 @@ public class ConsoleInterface {
     }
 
     public void start() {
+        // Run the main CLI loop for book management
         while (true) {
             displayMenu();
             try {
                 int choice = getUserChoice();
-                switch (choice) {
-                    case 1 -> displayBooks();
-                    case 2 -> createBook();
-                    case 3 -> editBook();
-                    case 4 -> deleteBook();
-                    case 0 -> {
-                        System.out.println("Saving and exiting...");
-                        return;
-                    }
-                    default -> System.out.println("Invalid choice. Please enter a number between 0 and 4.");
+                if (handleUserChoice(choice)) {
+                    return;
                 }
             } catch (NumberFormatException e) {
                 System.out.println("Please enter a valid number.");
@@ -42,6 +35,22 @@ public class ConsoleInterface {
                 System.out.println("An unexpected error occurred: " + e.getMessage());
             }
         }
+    }
+
+    private boolean handleUserChoice(int choice) {
+        // Handle user menu selection
+        switch (choice) {
+            case 1 -> displayBooks();
+            case 2 -> createBook();
+            case 3 -> editBook();
+            case 4 -> deleteBook();
+            case 0 -> {
+                System.out.println("Saving and exiting...");
+                return true;
+            }
+            default -> System.out.println("Invalid choice. Please enter a number between 0 and 4.");
+        }
+        return false;
     }
 
     private void displayMenu() {
