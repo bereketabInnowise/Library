@@ -1,0 +1,8 @@
+[versions]
+spring-context = "6.1.5"
+jackson = "2.16.1"
+
+[libraries]
+spring-context = { module = "org.springframework:spring-context", version.ref = "spring-context" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }

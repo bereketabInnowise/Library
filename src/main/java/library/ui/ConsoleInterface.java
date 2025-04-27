@@ -37,25 +37,34 @@ public class ConsoleInterface {
         };
     }
     public void start() {
+        // Run the main CLI loop for book management
         while (true) {
             displayMenu();
             try {
                 int choice = getUserChoice();
-                switch (choice) {
-                    case 1 -> displayBooks();
-                    case 2 -> createBook();
-                    case 3 -> editBook();
-                    case 4 -> deleteBook();
-                    case 0 -> {
-                        System.out.println(messageSource.getMessage("app.success.exit", null, locale));
-                        return;
-                    }
-                    default -> System.out.println(messageSource.getMessage("app.error.choice.invalid", null, locale));
+                if (handleUserChoice(choice)) {
+                    return;
                 }
             } catch (NumberFormatException e) {
                 System.out.println(messageSource.getMessage("app.error.choice.invalid", null, locale));
             }
         }
+    }
+
+    private boolean handleUserChoice(int choice) {
+        // Handle user menu selection
+        switch (choice) {
+              case 1 -> displayBooks();
+              case 2 -> createBook();
+              case 3 -> editBook();
+              case 4 -> deleteBook();
+              case 0 -> {
+                System.out.println(messageSource.getMessage("app.success.exit", null, locale));
+                return true;
+                }
+              default -> System.out.println(messageSource.getMessage("app.error.choice.invalid", null, locale));
+        }
+        return false;
     }
 
     private void displayMenu() {
@@ -161,7 +170,11 @@ public class ConsoleInterface {
             System.out.println(messageSource.getMessage("app.error.id.invalid", null, locale));
             return;
         }
+        try{
         bookService.deleteBook(id);
         System.out.println(messageSource.getMessage("app.success.delete", null, locale));
+        }catch (IllegalArgumentException e) {
+    System.out.println(messageSource.getMessage("app.error.id.notfound", new Object[]{id}, locale));
+}
     }
 }
