@@ -5,6 +5,8 @@ import library.service.BookService;
 import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Scanner;
+import org.springframework.context.MessageSource;
+import java.util.Locale;
 
 /**
  * Console UI demonstrating Constructor-based DI with Spring IoC.
@@ -13,11 +15,27 @@ import java.util.Scanner;
 public class ConsoleInterface {
     private final BookService bookService;
     private final Scanner scanner = new Scanner(System.in);
+    private final Locale locale;
+    private final MessageSource messageSource;
 
-    public ConsoleInterface(BookService bookService) {
+    public ConsoleInterface(BookService bookService, MessageSource messageSource) {
+
         this.bookService = bookService;
+        this.messageSource = messageSource;
+        this.locale = selectLocale();
     }
-
+    private Locale selectLocale(){
+        System.out.print(messageSource.getMessage("app.prompt.locale", null, Locale.ENGLISH));
+        String input = scanner.nextLine().trim().toLowerCase();
+        return switch (input){
+            case "pl" -> Locale.forLanguageTag("pl");
+            case "en" -> Locale.ENGLISH;
+            default -> {
+                System.out.println(messageSource.getMessage("app.error.locale.invalid", null, Locale.ENGLISH));
+                yield Locale.ENGLISH;
+            }
+        };
+    }
     public void start() {
         // Run the main CLI loop for book management
         while (true) {
@@ -28,11 +46,7 @@ public class ConsoleInterface {
                     return;
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
-            } catch (IllegalArgumentException e) {
-                System.out.println("Error: " + e.getMessage());
-            } catch (Exception e) {
-                System.out.println("An unexpected error occurred: " + e.getMessage());
+                System.out.println(messageSource.getMessage("app.error.choice.invalid", null, locale));
             }
         }
     }
@@ -40,27 +54,27 @@ public class ConsoleInterface {
     private boolean handleUserChoice(int choice) {
         // Handle user menu selection
         switch (choice) {
-            case 1 -> displayBooks();
-            case 2 -> createBook();
-            case 3 -> editBook();
-            case 4 -> deleteBook();
-            case 0 -> {
-                System.out.println("Saving and exiting...");
+              case 1 -> displayBooks();
+              case 2 -> createBook();
+              case 3 -> editBook();
+              case 4 -> deleteBook();
+              case 0 -> {
+                System.out.println(messageSource.getMessage("app.success.exit", null, locale));
                 return true;
-            }
-            default -> System.out.println("Invalid choice. Please enter a number between 0 and 4.");
+                }
+              default -> System.out.println(messageSource.getMessage("app.error.choice.invalid", null, locale));
         }
         return false;
     }
 
     private void displayMenu() {
-        System.out.println("\nLibrary Management System");
-        System.out.println("1. Display book list");
-        System.out.println("2. Create new book");
-        System.out.println("3. Edit book");
-        System.out.println("4. Delete book");
-        System.out.println("0. Save and exit");
-        System.out.print("Enter your choice: ");
+        System.out.println("\n" + messageSource.getMessage("app.welcome", null, locale));
+        System.out.println(messageSource.getMessage("app.menu.display", null, locale));
+        System.out.println(messageSource.getMessage("app.menu.create", null, locale));
+        System.out.println(messageSource.getMessage("app.menu.edit", null, locale));
+        System.out.println(messageSource.getMessage("app.menu.delete", null, locale));
+        System.out.println(messageSource.getMessage("app.menu.exit", null, locale));
+        System.out.print(messageSource.getMessage("app.prompt.choice", null, locale));
     }
 
     private int getUserChoice() {
@@ -68,71 +82,99 @@ public class ConsoleInterface {
     }
 
     private void displayBooks() {
-        System.out.println("\nBook List:");
+        System.out.println("\n" + messageSource.getMessage("app.book.list", null, locale));
         List<Book> books = bookService.getAllBooks();
         if (books.isEmpty()) {
-            System.out.println("No books found.");
+            System.out.println(messageSource.getMessage("app.book.none", null, locale));
         } else {
-            books.forEach(System.out::println);
+            String titleLabel = messageSource.getMessage("book.field.title", null, locale);
+            String authorLabel = messageSource.getMessage("book.field.author", null, locale);
+            String descLabel = messageSource.getMessage("book.field.description", null, locale);
+            for (Book book : books) {
+                System.out.printf("{id=%d, %s='%s', %s='%s', %s='%s'}%n",
+                        book.getId(),
+                        titleLabel, book.getTitle(),
+                        authorLabel, book.getAuthor(),
+                        descLabel, book.getDescription());
+            }
         }
     }
 
     private void createBook() {
-        System.out.print("Enter title: ");
+        System.out.print(messageSource.getMessage("app.prompt.title", new Object[]{""}, locale));
         String title = scanner.nextLine().trim();
-        System.out.print("Enter author: ");
+        System.out.print(messageSource.getMessage("app.prompt.author", new Object[]{""}, locale));
         String author = scanner.nextLine().trim();
-        System.out.print("Enter description: ");
+        System.out.print(messageSource.getMessage("app.prompt.desc", new Object[]{""}, locale));
         String description = scanner.nextLine().trim();
 
         Book book = new Book(0, title, author, description);
         bookService.createBook(book);
-        System.out.println("Book created successfully!");
+        System.out.println(messageSource.getMessage("app.success.create", null, locale));
     }
 
     private void editBook() {
-        System.out.print("Enter book ID to edit: ");
+        System.out.print(messageSource.getMessage("app.prompt.id.edit", null, locale));
         int id;
         try {
             id = Integer.parseInt(scanner.nextLine().trim());
         } catch (NumberFormatException e) {
-            System.out.println("Error: Please enter a valid number for ID.");
+            System.out.println(messageSource.getMessage("app.error.id.invalid", null, locale));
             return;
         }
 
         if (!bookService.bookExists(id)) {
-            System.out.println("Error: Book with ID " + id + " not found");
+            System.out.println(messageSource.getMessage("app.error.id.notfound", new Object[]{id}, locale));
             return;
         }
         // Get the current book
         Book currentBook = bookService.getBookById(id);
-        System.out.println("Current book: " + currentBook);
-        System.out.println("Press Enter to keep current value.");
+        String titleLabel = messageSource.getMessage("book.field.title", null, locale);
+        String authorLabel = messageSource.getMessage("book.field.author", null, locale);
+        String descLabel = messageSource.getMessage("book.field.description", null, locale);
+        System.out.println(messageSource.getMessage("app.edit.current", new Object[]{
+                String.format("id=%d, %s='%s', %s='%s', %s='%s'",
+                        currentBook.getId(),
+                        titleLabel, currentBook.getTitle(),
+                        authorLabel, currentBook.getAuthor(),
+                        descLabel, currentBook.getDescription())
+        }, locale));
+        System.out.println(messageSource.getMessage("app.edit.instruction", null, locale));
 
         // Title
-        System.out.print("Enter new title [" + currentBook.getTitle() + "]: ");
+        System.out.print(messageSource.getMessage("app.prompt.title", new Object[]{currentBook.getTitle()}, locale));
         String title = scanner.nextLine().trim();
         title = title.isEmpty() ? currentBook.getTitle() : title;
 
         // Author
-        System.out.print("Enter new author [" + currentBook.getAuthor() + "]: ");
+        System.out.print(messageSource.getMessage("app.prompt.author", new Object[]{currentBook.getAuthor()}, locale));
         String author = scanner.nextLine().trim();
         author = author.isEmpty() ? currentBook.getAuthor() : author;
 
         // Description
-        System.out.print("Enter new description [" + currentBook.getDescription() + "]: ");
+        System.out.print(messageSource.getMessage("app.prompt.desc", new Object[]{currentBook.getDescription()}, locale));
         String description = scanner.nextLine().trim();
         description = description.isEmpty() ? currentBook.getDescription() : description;
 
         Book updatedBook = new Book(id, title, author, description);
         bookService.updateBook(id, updatedBook);
-        System.out.println("Book updated successfully!");
+        System.out.println(messageSource.getMessage("app.success.update", null, locale));
     }
 
     private void deleteBook() {
-        System.out.print("Enter book ID to delete: ");
-        int id = Integer.parseInt(scanner.nextLine().trim());
+        System.out.print(messageSource.getMessage("app.prompt.id.delete", null, locale));
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine().trim());
+        }catch (NumberFormatException e){
+            System.out.println(messageSource.getMessage("app.error.id.invalid", null, locale));
+            return;
+        }
+        try{
         bookService.deleteBook(id);
-        System.out.println("Book deleted successfully!");
+        System.out.println(messageSource.getMessage("app.success.delete", null, locale));
+        }catch (IllegalArgumentException e) {
+    System.out.println(messageSource.getMessage("app.error.id.notfound", new Object[]{id}, locale));
+}
     }
 }
