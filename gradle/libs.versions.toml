@@ -1,0 +1,11 @@
+[versions]
+spring = "6.0.11"
+aspectjweaver = "1.9.19"
+jackson = "2.16.1"
+
+[libraries]
+spring-context = { module = "org.springframework:spring-context", version.ref = "spring" }
+spring-aop = { module = "org.springframework:spring-aop", version.ref = "spring" }
+aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectjweaver" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }

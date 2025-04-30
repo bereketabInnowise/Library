@@ -14,12 +14,11 @@ java {
 }
 //org.springframework:spring-context:6.1.5
 dependencies {
-    implementation("org.springframework:spring-context:6.0.11")
-    implementation("org.springframework:spring-aop:6.0.11")
-    implementation("org.aspectj:aspectjweaver:1.9.19")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.16.1")
-
+    implementation(libs.spring.context)
+    implementation(libs.spring.aop)
+    implementation(libs.aspectjweaver)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.dataformat.csv)
 }
 
 tasks.withType<JavaCompile> {
