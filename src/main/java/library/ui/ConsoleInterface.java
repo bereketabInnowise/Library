@@ -172,9 +172,9 @@ public class ConsoleInterface {
         }
         try{
         bookService.deleteBook(id);
-        System.out.println(messageSource.getMessage("app.success.delete", null, locale));
-        }catch (IllegalArgumentException e) {
-    System.out.println(messageSource.getMessage("app.error.id.notfound", new Object[]{id}, locale));
-}
+        System.out.println(messageSource.getMessage("app.success.delete", null, locale));}
+        catch (IllegalArgumentException e){
+            System.out.println(messageSource.getMessage("app.error.id.notfound", new Object[]{id}, locale));
+        }
     }
 }
