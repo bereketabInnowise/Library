@@ -19,6 +19,8 @@ dependencies {
     implementation(libs.aspectjweaver)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.dataformat.csv)
+    implementation(libs.postgresql)
+    implementation(libs.spring.jdbc)
 }
 
 tasks.withType<JavaCompile> {
