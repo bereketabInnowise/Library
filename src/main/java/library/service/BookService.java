@@ -1,68 +1,122 @@
 package library.service;
 
 import library.model.Book;
-import library.repository.BookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Service layer for book operations, demonstrating Field-based DI.
- * Uses IoC via Spring to manage dependencies.
- */
 @Service
 public class BookService {
-//    Field dependency injection
-    @Autowired
-    private BookRepository bookRepository;
+    private final JdbcTemplate jdbcTemplate;
 
-
-    public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+    public BookService(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public void createBook(Book book) {
-        if (book.getTitle() == null || book.getTitle().trim().isEmpty() ||
-                book.getAuthor() == null || book.getAuthor().trim().isEmpty()) {
-            throw new IllegalArgumentException("Title and author are required");
+        // Insert book
+        String sql = "INSERT INTO books (title, author_id, description) VALUES (?, ?, ?) RETURNING id";
+        Integer bookId = jdbcTemplate.queryForObject(sql, Integer.class, book.getTitle(), book.getAuthorId(), book.getDescription());
+        if (bookId == null) {
+            throw new IllegalStateException("Failed to create book");
         }
-        List<Book> books = new ArrayList<>(bookRepository.findAll());
-        book.setId(bookRepository.getNextId());
-        books.add(book);
-        bookRepository.saveAll(books);
+
+        // Insert genres
+        for (String genreName : book.getGenres()) {
+            // Get or create genre
+            String genreSql = "INSERT INTO genres (name) VALUES (?) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id";
+            Integer genreId = jdbcTemplate.queryForObject(genreSql, Integer.class, genreName);
+            if (genreId != null) {
+                jdbcTemplate.update("INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)", bookId, genreId);
+            }
+        }
     }
 
-    public void updateBook(int id, Book updatedBook) {
-        List<Book> books = new ArrayList<>(bookRepository.findAll());
-        if (books.stream().noneMatch(book -> book.getId() == id)) {
+    public void updateBook(int id, Book book) {
+        // Update book
+        String sql = "UPDATE books SET title = ?, author_id = ?, description = ? WHERE id = ?";
+        int rows = jdbcTemplate.update(sql, book.getTitle(), book.getAuthorId(), book.getDescription(), id);
+        if (rows == 0) {
             throw new IllegalArgumentException("Book with ID " + id + " not found");
         }
-        if (updatedBook.getTitle() == null || updatedBook.getTitle().trim().isEmpty() ||
-                updatedBook.getAuthor() == null || updatedBook.getAuthor().trim().isEmpty()) {
-            throw new IllegalArgumentException("Title and author are required");
+
+        // Clear existing genres
+        jdbcTemplate.update("DELETE FROM book_genres WHERE book_id = ?", id);
+
+        // Insert new genres
+        for (String genreName : book.getGenres()) {
+            String genreSql = "INSERT INTO genres (name) VALUES (?) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id";
+            Integer genreId = jdbcTemplate.queryForObject(genreSql, Integer.class, genreName);
+            if (genreId != null) {
+                jdbcTemplate.update("INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)", id, genreId);
+            }
         }
-        updatedBook.setId(id);  // Ensure ID remains the same
-        books.replaceAll(book -> book.getId() == id ? updatedBook : book);
-        bookRepository.saveAll(books);
     }
 
     public void deleteBook(int id) {
-        List<Book> books = new ArrayList<>(bookRepository.findAll());
-        if (books.stream().noneMatch(book -> book.getId() == id)) {
+        // book_genres deleted via ON DELETE CASCADE
+        String sql = "DELETE FROM books WHERE id = ?";
+        int rows = jdbcTemplate.update(sql, id);
+        if (rows == 0) {
             throw new IllegalArgumentException("Book with ID " + id + " not found");
         }
-        books.removeIf(book -> book.getId() == id);
-        bookRepository.saveAll(books);
     }
-    public boolean bookExists(int id) {
-        return bookRepository.findAll().stream().anyMatch(book -> book.getId() == id);
+
+    public List<Book> getAllBooks() {
+        String sql = "SELECT b.id, b.title, b.author_id, a.name AS author_name, b.description " +
+                "FROM books b JOIN authors a ON b.author_id = a.id";
+        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper());
+
+        // Fetch genres for each book
+        for (Book book : books) {
+            List<String> genres = jdbcTemplate.query(
+                    "SELECT g.name FROM genres g JOIN book_genres bg ON g.id = bg.genre_id WHERE bg.book_id = ?",
+                    (rs, rowNum) -> rs.getString("name"), book.getId());
+            book.setGenres(genres);
+        }
+        return books;
     }
+
     public Book getBookById(int id) {
-        return bookRepository.findAll().stream()
-                .filter(book -> book.getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Book with ID " + id + " not found"));
+        String sql = "SELECT b.id, b.title, b.author_id, a.name AS author_name, b.description " +
+                "FROM books b JOIN authors a ON b.author_id = a.id WHERE b.id = ?";
+        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), id);
+        if (books.isEmpty()) {
+            throw new IllegalArgumentException("Book with ID " + id + " not found");
+        }
+        Book book = books.get(0);
+
+        // Fetch genres
+        List<String> genres = jdbcTemplate.query(
+                "SELECT g.name FROM genres g JOIN book_genres bg ON g.id = bg.genre_id WHERE bg.book_id = ?",
+                (rs, rowNum) -> rs.getString("name"), id);
+        book.setGenres(genres);
+        return book;
+    }
+
+    public boolean bookExists(int id) {
+        String sql = "SELECT COUNT(*) FROM books WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count != null && count > 0;
+    }
+
+    private static class BookRowMapper implements RowMapper<Book> {
+        @Override
+        public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new Book(
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getInt("author_id"),
+                    rs.getString("author_name"),
+                    rs.getString("description"),
+                    new ArrayList<>()
+            );
+        }
     }
 }
 /** Custom exception for book not found scenarios */
