@@ -42,6 +42,7 @@ public class ConsoleInterface {
     }
 
     public void start() {
+        // Run the main CLI loop for book management
         while (true) {
             menuDisplay.displayMainMenu();
             try {
