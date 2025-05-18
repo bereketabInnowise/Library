@@ -1,6 +1,8 @@
 package library.ui;
 
+import library.model.Author;
 import library.model.Book;
+import library.model.Genre;
 import library.service.AuthorService;
 import library.service.BookService;
 import library.service.GenreService;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class BookManager {
     private final BookService bookService;
@@ -43,38 +46,41 @@ public class BookManager {
             String descLabel = messageSource.getMessage("book.field.description", null, locale);
             String genresLabel = messageSource.getMessage("book.field.genres", null, locale);
             for (Book book : books) {
+                List<String> genreNames = book.getGenres().stream()
+                        .map(Genre::getName)
+                        .collect(Collectors.toList());
                 System.out.printf("Book{id=%d, %s='%s', %s='%s', %s='%s', %s=%s}%n",
                         book.getId(),
                         titleLabel, book.getTitle(),
-                        authorLabel, book.getAuthorName(),
+                        authorLabel, book.getAuthor() != null ? book.getAuthor().getName() : "Unknown",
                         descLabel, book.getDescription(),
-                        genresLabel, book.getGenres());
+                        genresLabel, genreNames);
             }
         }
     }
 
     public void createBook() {
         // Select author
-        int authorId = selectAuthor();
-        if (authorId == -1) return;
+        Author author = selectAuthor();
+        if (author == null) return;
 
         // Book details
         String title = inputHandler.getInput("app.prompt.title", new Object[]{""});
         String description = inputHandler.getInput("app.prompt.desc", new Object[]{""});
 
         // Select genres
-        List<String> genreNames = selectGenres();
-        if (genreNames == null) return;
+        List<Genre> genres = selectGenres();
+        if (genres == null) return;
 
-        Book book = new Book(0, title, authorId, null, description, genreNames);
+        Book book = new Book(title, author, description, genres);
         bookService.createBook(book);
         System.out.println(messageSource.getMessage("app.success.create", null, locale));
     }
 
     public void editBook() {
-        int id;
+        Long id;
         try {
-            id = inputHandler.getValidId("app.prompt.id.edit");
+            id = (long) inputHandler.getValidId("app.prompt.id.edit");
         } catch (NumberFormatException e) {
             System.out.println(e.getMessage());
             return;
@@ -89,26 +95,27 @@ public class BookManager {
         displayCurrentBook(currentBook);
 
         // Select author
-        int authorId = updateAuthor(currentBook);
-        if (authorId == -1) return;
+        Author author = updateAuthor(currentBook);
+        if (author == null) return;
 
         // Book details
         String title = updateTitle(currentBook);
         String description = updateDescription(currentBook);
 
         // Select genres
-        List<String> genreNames = updateGenres(currentBook);
-        if (genreNames == null) return;
+        List<Genre> genres = updateGenres(currentBook);
+        if (genres == null) return;
 
-        Book updatedBook = new Book(id, title, authorId, null, description, genreNames);
+        Book updatedBook = new Book(title, author, description, genres);
+        updatedBook.setId(id);
         bookService.updateBook(id, updatedBook);
         System.out.println(messageSource.getMessage("app.success.update", null, locale));
     }
 
     public void deleteBook() {
-        int id;
+        Long id;
         try {
-            id = inputHandler.getValidId("app.prompt.id.delete");
+            id = (long) inputHandler.getValidId("app.prompt.id.delete");
         } catch (NumberFormatException e) {
             System.out.println(e.getMessage());
             return;
@@ -122,53 +129,50 @@ public class BookManager {
         }
     }
 
-    private int selectAuthor() {
+    private Author selectAuthor() {
         System.out.println(messageSource.getMessage("app.author.list", null, locale));
-        List<AuthorService.Author> authors = authorService.getAllAuthors();
+        List<Author> authors = authorService.getAllAuthors();
         if (authors.isEmpty()) {
             System.out.println(messageSource.getMessage("app.author.emptylist", null, locale));
-            return -1;
+            return null;
         }
 
-        for (AuthorService.Author author : authors) {
+        for (Author author : authors) {
             System.out.println(author.getId() + ": " + author.getName());
         }
 
         try {
-            int authorId = inputHandler.getValidId("app.prompt.author.id");
-            if (!authorService.authorExists(authorId)) {
-                System.out.println(messageSource.getMessage("app.error.author.notfound", new Object[]{authorId}, locale));
-                return -1;
-            }
-            return authorId;
-        } catch (NumberFormatException e) {
-            System.out.println(e.getMessage());
-            return -1;
+            Long authorId = (long) inputHandler.getValidId("app.prompt.author.id");
+            Author author = authorService.getAuthorById(authorId);
+            return author;
+        } catch (IllegalArgumentException e) {
+            System.out.println(messageSource.getMessage("app.error.author.notfound", new Object[]{e.getMessage()}, locale));
+            return null;
         }
     }
 
-    private List<String> selectGenres() {
+    private List<Genre> selectGenres() {
         System.out.println(messageSource.getMessage("app.genre.list", null, locale));
-        List<GenreService.Genre> genres = genreService.getAllGenres();
-        for (GenreService.Genre genre : genres) {
+        List<Genre> genres = genreService.getAllGenres();
+        for (Genre genre : genres) {
             System.out.println(genre.getId() + ": " + genre.getName());
         }
 
         String genreInput = inputHandler.getInput("app.prompt.genres", null);
-        List<String> genreNames = new ArrayList<>();
+        List<Genre> selectedGenres = new ArrayList<>();
         if (!genreInput.isEmpty()) {
             for (String genreIdStr : genreInput.split(",")) {
                 try {
-                    int genreId = Integer.parseInt(genreIdStr.trim());
-                    GenreService.Genre genre = genreService.getGenreById(genreId);
-                    genreNames.add(genre.getName());
+                    Long genreId = Long.parseLong(genreIdStr.trim());
+                    Genre genre = genreService.getGenreById(genreId);
+                    selectedGenres.add(genre);
                 } catch (IllegalArgumentException e) {
                     System.out.println(messageSource.getMessage("app.error.genre.invalid", new Object[]{genreIdStr}, locale));
                     return null;
                 }
             }
         }
-        return genreNames;
+        return selectedGenres;
     }
 
     private void displayCurrentBook(Book book) {
@@ -177,39 +181,40 @@ public class BookManager {
         String descLabel = messageSource.getMessage("book.field.description", null, locale);
         String genresLabel = messageSource.getMessage("book.field.genres", null, locale);
 
+        List<String> genreNames = book.getGenres().stream()
+                .map(Genre::getName)
+                .collect(Collectors.toList());
+
         System.out.println(messageSource.getMessage("app.edit.current", new Object[]{
                 String.format("id=%d, %s='%s', %s='%s', %s='%s', %s=%s",
                         book.getId(),
                         titleLabel, book.getTitle(),
-                        authorLabel, book.getAuthorName(),
+                        authorLabel, book.getAuthor() != null ? book.getAuthor().getName() : "Unknown",
                         descLabel, book.getDescription(),
-                        genresLabel, book.getGenres())
+                        genresLabel, genreNames)
         }, locale));
         System.out.println(messageSource.getMessage("app.edit.instruction", null, locale));
     }
 
-    private int updateAuthor(Book currentBook) {
+    private Author updateAuthor(Book currentBook) {
         System.out.println(messageSource.getMessage("app.author.list", null, locale));
-        List<AuthorService.Author> authors = authorService.getAllAuthors();
-        for (AuthorService.Author author : authors) {
+        List<Author> authors = authorService.getAllAuthors();
+        for (Author author : authors) {
             System.out.println(author.getId() + ": " + author.getName());
         }
 
-        String authorInput = inputHandler.getInput("app.prompt.author.id", new Object[]{currentBook.getAuthorName()});
+        String authorInput = inputHandler.getInput("app.prompt.author.id", new Object[]{currentBook.getAuthor() != null ? currentBook.getAuthor().getName() : ""});
         if (authorInput.isEmpty()) {
-            return currentBook.getAuthorId();
+            return currentBook.getAuthor();
         }
 
         try {
-            int authorId = Integer.parseInt(authorInput);
-            if (!authorService.authorExists(authorId)) {
-                System.out.println(messageSource.getMessage("app.error.author.notfound", new Object[]{authorId}, locale));
-                return -1;
-            }
-            return authorId;
-        } catch (NumberFormatException e) {
-            System.out.println(messageSource.getMessage("app.error.id.invalid", null, locale));
-            return -1;
+            Long authorId = Long.parseLong(authorInput);
+            Author author = authorService.getAuthorById(authorId);
+            return author;
+        } catch (IllegalArgumentException e) {
+            System.out.println(messageSource.getMessage("app.error.author.notfound", new Object[]{authorInput}, locale));
+            return null;
         }
     }
 
@@ -223,29 +228,29 @@ public class BookManager {
         return description.isEmpty() ? currentBook.getDescription() : description;
     }
 
-    private List<String> updateGenres(Book currentBook) {
+    private List<Genre> updateGenres(Book currentBook) {
         System.out.println(messageSource.getMessage("app.genre.list", null, locale));
-        List<GenreService.Genre> genres = genreService.getAllGenres();
-        for (GenreService.Genre genre : genres) {
+        List<Genre> genres = genreService.getAllGenres();
+        for (Genre genre : genres) {
             System.out.println(genre.getId() + ": " + genre.getName());
         }
 
         String genreInput = inputHandler.getInput("app.prompt.genres", null);
-        List<String> genreNames = new ArrayList<>(currentBook.getGenres());
+        List<Genre> selectedGenres = new ArrayList<>(currentBook.getGenres());
 
         if (!genreInput.isEmpty()) {
-            genreNames.clear();
+            selectedGenres.clear();
             for (String genreIdStr : genreInput.split(",")) {
                 try {
-                    int genreId = Integer.parseInt(genreIdStr.trim());
-                    GenreService.Genre genre = genreService.getGenreById(genreId);
-                    genreNames.add(genre.getName());
+                    Long genreId = Long.parseLong(genreIdStr.trim());
+                    Genre genre = genreService.getGenreById(genreId);
+                    selectedGenres.add(genre);
                 } catch (IllegalArgumentException e) {
                     System.out.println(messageSource.getMessage("app.error.genre.invalid", new Object[]{genreIdStr}, locale));
                     return null;
                 }
             }
         }
-        return genreNames;
+        return selectedGenres;
     }
 }

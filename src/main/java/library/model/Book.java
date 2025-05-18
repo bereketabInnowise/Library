@@ -1,34 +1,54 @@
 package library.model;
 
+import jakarta.persistence.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "books")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Book {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_seq")
+    @SequenceGenerator(name = "book_seq", sequenceName = "books_id_seq", allocationSize = 1)
+    private Long id;
+
+    @Column(nullable = false)
     private String title;
-    private int authorId;
-    private String authorName;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "author_id", nullable = false)
+    private Author author;
+
     private String description;
-    private List<String> genres;
 
-    public Book() {
-        this.genres = new ArrayList<>();
-    }
+    @ManyToMany
+    @JoinTable(
+            name = "book_genres",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "genre_id")
+    )
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    private List<Genre> genres = new ArrayList<>();
 
-    public Book(int id, String title, int authorId, String authorName, String description, List<String> genres) {
-        this.id = id;
+    public Book() {}
+
+    public Book(String title, Author author, String description, List<Genre> genres) {
         this.title = title;
-        this.authorId = authorId;
-        this.authorName = authorName;
+        this.author = author;
         this.description = description;
         this.genres = genres != null ? genres : new ArrayList<>();
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -40,20 +60,12 @@ public class Book {
         this.title = title;
     }
 
-    public int getAuthorId() {
-        return authorId;
+    public Author getAuthor() {
+        return author;
     }
 
-    public void setAuthorId(int authorId) {
-        this.authorId = authorId;
-    }
-
-    public String getAuthorName() {
-        return authorName;
-    }
-
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
+    public void setAuthor(Author author) {
+        this.author = author;
     }
 
     public String getDescription() {
@@ -64,16 +76,17 @@ public class Book {
         this.description = description;
     }
 
-    public List<String> getGenres() {
+    public List<Genre> getGenres() {
         return genres;
     }
 
-    public void setGenres(List<String> genres) {
+    public void setGenres(List<Genre> genres) {
         this.genres = genres;
     }
 
     @Override
     public String toString() {
-        return "Book{id=" + id + ", title='" + title + "', authorId=" + authorId + ", authorName='" + authorName + "', description='" + description + "', genres=" + genres + "}";
+        return "Book{id=" + id + ", title='" + title + "', author=" + (author != null ? author.getName() : null) +
+                ", description='" + description + "', genres=" + genres + "}";
     }
 }

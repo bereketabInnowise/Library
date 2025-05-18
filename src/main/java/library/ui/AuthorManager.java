@@ -1,5 +1,6 @@
 package library.ui;
 
+import library.model.Author;
 import library.service.AuthorService;
 import org.springframework.context.MessageSource;
 
@@ -47,7 +48,7 @@ public class AuthorManager {
     }
 
     private void displayAuthors() {
-        List<AuthorService.Author> authors = authorService.getAllAuthors();
+        List<Author> authors = authorService.getAllAuthors();
         if (authors.isEmpty()) {
             System.out.println(messageSource.getMessage("app.error.author.notfound", null, locale));
         } else {
@@ -63,7 +64,7 @@ public class AuthorManager {
 
     private void editAuthor() {
         try {
-            int id = inputHandler.getValidId("app.auth-prompt.id");
+            long id = inputHandler.getValidId("app.auth-prompt.id");
             String name = inputHandler.getInput("app.auth-prompt.name", null);
             authorService.updateAuthor(id, name);
             System.out.println(messageSource.getMessage("app.auth-success.update", null, locale));
@@ -74,7 +75,7 @@ public class AuthorManager {
 
     private void deleteAuthor() {
         try {
-            int id = inputHandler.getValidId("app.auth-prompt.id");
+            long id = inputHandler.getValidId("app.auth-prompt.id");
             authorService.deleteAuthor(id);
             System.out.println(messageSource.getMessage("app.auth-success.delete", null, locale));
         } catch (NumberFormatException e) {

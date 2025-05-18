@@ -1,89 +1,72 @@
 package library.service;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import library.model.Author;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Service
 public class AuthorService {
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionFactory sessionFactory;
 
-    public AuthorService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public AuthorService(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     public void createAuthor(String name) {
-        String sql = "INSERT INTO authors (name) VALUES (?)";
-        jdbcTemplate.update(sql, name);
-    }
-
-    public void updateAuthor(int id, String name) {
-        String sql = "UPDATE authors SET name = ? WHERE id = ?";
-        int rows = jdbcTemplate.update(sql, name, id);
-        if (rows == 0) {
-            throw new IllegalArgumentException("Author with ID " + id + " not found");
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.persist(new Author(name));
+            session.getTransaction().commit();
         }
     }
 
-    public void deleteAuthor(int id) {
-        String sql = "DELETE FROM authors WHERE id = ?";
-        int rows = jdbcTemplate.update(sql, id);
-        if (rows == 0) {
-            throw new IllegalArgumentException("Author with ID " + id + " not found");
+    public void updateAuthor(Long id, String name) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Author author = session.get(Author.class, id);
+            if (author == null) {
+                throw new IllegalArgumentException("Author with ID " + id + " not found");
+            }
+            author.setName(name);
+            session.merge(author);
+            session.getTransaction().commit();
+        }
+    }
+
+    public void deleteAuthor(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Author author = session.get(Author.class, id);
+            if (author == null) {
+                throw new IllegalArgumentException("Author with ID " + id + " not found");
+            }
+            session.remove(author);
+            session.getTransaction().commit();
         }
     }
 
     public List<Author> getAllAuthors() {
-        String sql = "SELECT id, name FROM authors";
-        return jdbcTemplate.query(sql, new AuthorRowMapper());
-    }
-
-    public Author getAuthorById(int id) {
-        String sql = "SELECT id, name FROM authors WHERE id = ?";
-        List<Author> authors = jdbcTemplate.query(sql, new AuthorRowMapper(), id);
-        if (authors.isEmpty()) {
-            throw new IllegalArgumentException("Author with ID " + id + " not found");
-        }
-        return authors.get(0);
-    }
-
-    public boolean authorExists(int id) {
-        String sql = "SELECT COUNT(*) FROM authors WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
-    }
-
-    public static class Author {
-        private int id;
-        private String name;
-
-        public Author(int id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return "Author{id=" + id + ", name='" + name + "'}";
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM Author", Author.class).setCacheable(true).getResultList();
         }
     }
 
-    private static class AuthorRowMapper implements RowMapper<Author> {
-        @Override
-        public Author mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Author(rs.getInt("id"), rs.getString("name"));
+    public Author getAuthorById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            Author author = session.get(Author.class, id);
+            if (author == null) {
+                throw new IllegalArgumentException("Author with ID " + id + " not found");
+            }
+            return author;
+        }
+    }
+
+    public boolean authorExists(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.get(Author.class, id) != null;
         }
     }
 }

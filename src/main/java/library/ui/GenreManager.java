@@ -1,5 +1,6 @@
 package library.ui;
 
+import library.model.Genre;
 import library.service.GenreService;
 import org.springframework.context.MessageSource;
 
@@ -47,7 +48,7 @@ public class GenreManager {
     }
 
     private void displayGenres() {
-        List<GenreService.Genre> genres = genreService.getAllGenres();
+        List<Genre> genres = genreService.getAllGenres();
         if (genres.isEmpty()) {
             System.out.print(messageSource.getMessage("app.genre.emptylist", null, locale));
         } else {
@@ -63,7 +64,7 @@ public class GenreManager {
 
     private void editGenre() {
         try {
-            int id = inputHandler.getValidId("app.gen-prompt.id");
+            long id = inputHandler.getValidId("app.gen-prompt.id");
             String name = inputHandler.getInput("app.gen-prompt.name", null);
             genreService.updateGenre(id, name);
             System.out.print(messageSource.getMessage("app.gen-success.update", null, locale));
@@ -74,7 +75,7 @@ public class GenreManager {
 
     private void deleteGenre() {
         try {
-            int id = inputHandler.getValidId("app.gen-prompt.id");
+            long id = inputHandler.getValidId("app.gen-prompt.id");
             genreService.deleteGenre(id);
             System.out.print(messageSource.getMessage("app.gen-success.delete", null, locale));
         } catch (NumberFormatException e) {

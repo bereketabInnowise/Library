@@ -11,7 +11,8 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.hibernate.SessionFactory;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 
@@ -47,9 +48,30 @@ public class AppConfig {
 
     }
 
+
     @Bean
-    public JdbcTemplate jdbcTemplate(DataSource dataSource){
-        return new JdbcTemplate(dataSource);
+    public LocalSessionFactoryBean sessionFactory(DataSource dataSource) {
+        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
+        sessionFactory.setDataSource(dataSource);
+        sessionFactory.setPackagesToScan("library.model");
+        Properties hibernateProperties = new Properties();
+        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "validate");
+        hibernateProperties.setProperty("hibernate.show_sql", "true");
+        hibernateProperties.setProperty("hibernate.format_sql", "true");
+        hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", "true");
+        hibernateProperties.setProperty("hibernate.cache.use_query_cache", "true");
+        hibernateProperties.setProperty("hibernate.cache.region.factory_class", "org.hibernate.cache.jcache.internal.JCacheRegionFactory");
+        hibernateProperties.setProperty("hibernate.jdbc.batch_size", "50");
+        hibernateProperties.setProperty("hibernate.order_inserts", "true");
+        hibernateProperties.setProperty("hibernate.order_updates", "true");
+        hibernateProperties.setProperty("hibernate.javax.cache.provider","org.ehcache.jsr107.EhcacheCachingProvider");
+       hibernateProperties.setProperty("hibernate.javax.cache.missing_cache_strategy" , "create");
+        sessionFactory.setHibernateProperties(hibernateProperties);
+        return sessionFactory;
     }
 
+    @Bean
+    public SessionFactory sessionFactoryBean(LocalSessionFactoryBean sessionFactory) throws Exception {
+        return sessionFactory.getObject();
+    }
 }

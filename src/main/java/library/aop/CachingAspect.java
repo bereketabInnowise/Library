@@ -15,9 +15,9 @@ public class CachingAspect {
 
     private final Map<Object, Object> cache = new HashMap<>();
 
-    @Around("execution(* library.service.BookService.getBookById(int)) || " +
-            "execution(* library.service.BookService.bookExists(int)) || " +
-            "execution(* library.service.BookService.getAllBooks())")
+//    @Around("execution(* library.service.BookService.getBookById(int)) || " +
+//            "execution(* library.service.BookService.bookExists(int)) || " +
+//            "execution(* library.service.BookService.getAllBooks())")
     public Object cacheResult(ProceedingJoinPoint joinPoint) throws Throwable {
         // Create cache key: method name + arguments
         String methodName = joinPoint.getSignature().getName();

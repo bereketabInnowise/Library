@@ -1,127 +1,89 @@
 package library.service;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.JoinType;
+import jakarta.persistence.criteria.Root;
 import library.model.Book;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import library.model.Genre;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class BookService {
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionFactory sessionFactory;
 
-    public BookService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public BookService(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     public void createBook(Book book) {
-        // Insert book
-        String sql = "INSERT INTO books (title, author_id, description) VALUES (?, ?, ?) RETURNING id";
-        Integer bookId = jdbcTemplate.queryForObject(sql, Integer.class, book.getTitle(), book.getAuthorId(), book.getDescription());
-        if (bookId == null) {
-            throw new IllegalStateException("Failed to create book");
-        }
-
-        // Insert genres
-        for (String genreName : book.getGenres()) {
-            // Get or create genre
-            String genreSql = "INSERT INTO genres (name) VALUES (?) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id";
-            Integer genreId = jdbcTemplate.queryForObject(genreSql, Integer.class, genreName);
-            if (genreId != null) {
-                jdbcTemplate.update("INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)", bookId, genreId);
-            }
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.persist(book);
+            session.getTransaction().commit();
         }
     }
 
-    public void updateBook(int id, Book book) {
-        // Update book
-        String sql = "UPDATE books SET title = ?, author_id = ?, description = ? WHERE id = ?";
-        int rows = jdbcTemplate.update(sql, book.getTitle(), book.getAuthorId(), book.getDescription(), id);
-        if (rows == 0) {
-            throw new IllegalArgumentException("Book with ID " + id + " not found");
-        }
-
-        // Clear existing genres
-        jdbcTemplate.update("DELETE FROM book_genres WHERE book_id = ?", id);
-
-        // Insert new genres
-        for (String genreName : book.getGenres()) {
-            String genreSql = "INSERT INTO genres (name) VALUES (?) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id";
-            Integer genreId = jdbcTemplate.queryForObject(genreSql, Integer.class, genreName);
-            if (genreId != null) {
-                jdbcTemplate.update("INSERT INTO book_genres (book_id, genre_id) VALUES (?, ?)", id, genreId);
+    public void updateBook(Long id, Book updatedBook) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Book existingBook = session.get(Book.class, id);
+            if (existingBook == null) {
+                throw new IllegalArgumentException("Book with ID " + id + " not found");
             }
+            existingBook.setTitle(updatedBook.getTitle());
+            existingBook.setAuthor(updatedBook.getAuthor());
+            existingBook.setDescription(updatedBook.getDescription());
+            existingBook.getGenres().clear();
+            existingBook.getGenres().addAll(updatedBook.getGenres());
+            session.merge(existingBook);
+            session.getTransaction().commit();
         }
     }
 
-    public void deleteBook(int id) {
-        // book_genres deleted via ON DELETE CASCADE
-        String sql = "DELETE FROM books WHERE id = ?";
-        int rows = jdbcTemplate.update(sql, id);
-        if (rows == 0) {
-            throw new IllegalArgumentException("Book with ID " + id + " not found");
+    public void deleteBook(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Book book = session.get(Book.class, id);
+            if (book == null) {
+                throw new IllegalArgumentException("Book with ID " + id + " not found");
+            }
+            session.remove(book);
+            session.getTransaction().commit();
         }
     }
 
     public List<Book> getAllBooks() {
-        String sql = "SELECT b.id, b.title, b.author_id, a.name AS author_name, b.description " +
-                "FROM books b JOIN authors a ON b.author_id = a.id";
-        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper());
-
-        // Fetch genres for each book
-        for (Book book : books) {
-            List<String> genres = jdbcTemplate.query(
-                    "SELECT g.name FROM genres g JOIN book_genres bg ON g.id = bg.genre_id WHERE bg.book_id = ?",
-                    (rs, rowNum) -> rs.getString("name"), book.getId());
-            book.setGenres(genres);
-        }
-        return books;
-    }
-
-    public Book getBookById(int id) {
-        String sql = "SELECT b.id, b.title, b.author_id, a.name AS author_name, b.description " +
-                "FROM books b JOIN authors a ON b.author_id = a.id WHERE b.id = ?";
-        List<Book> books = jdbcTemplate.query(sql, new BookRowMapper(), id);
-        if (books.isEmpty()) {
-            throw new IllegalArgumentException("Book with ID " + id + " not found");
-        }
-        Book book = books.get(0);
-
-        // Fetch genres
-        List<String> genres = jdbcTemplate.query(
-                "SELECT g.name FROM genres g JOIN book_genres bg ON g.id = bg.genre_id WHERE bg.book_id = ?",
-                (rs, rowNum) -> rs.getString("name"), id);
-        book.setGenres(genres);
-        return book;
-    }
-
-    public boolean bookExists(int id) {
-        String sql = "SELECT COUNT(*) FROM books WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
-    }
-
-    private static class BookRowMapper implements RowMapper<Book> {
-        @Override
-        public Book mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Book(
-                    rs.getInt("id"),
-                    rs.getString("title"),
-                    rs.getInt("author_id"),
-                    rs.getString("author_name"),
-                    rs.getString("description"),
-                    new ArrayList<>()
-            );
+        try (Session session = sessionFactory.openSession()) {
+            CriteriaBuilder cb = session.getCriteriaBuilder();
+            CriteriaQuery<Book> cq = cb.createQuery(Book.class);
+            Root<Book> root = cq.from(Book.class);
+            root.fetch("author", JoinType.LEFT);
+            root.fetch("genres", JoinType.LEFT);
+            cq.select(root);
+            return session.createQuery(cq).setCacheable(true).getResultList();
         }
     }
-}
-/** Custom exception for book not found scenarios */
-class BookNotFoundException extends RuntimeException {
-    public BookNotFoundException(int id) {
-        super("Book with ID " + id + " not found");
+
+    public Book getBookById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            Book book = session.get(Book.class, id);
+            if (book == null) {
+                throw new IllegalArgumentException("Book with ID " + id + " not found");
+            }
+            // Initialize lazy collections
+            book.getGenres().size();
+            return book;
+        }
+    }
+
+    public boolean bookExists(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.get(Book.class, id) != null;
+        }
     }
 }
