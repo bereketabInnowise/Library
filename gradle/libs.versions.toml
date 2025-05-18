@@ -3,12 +3,32 @@ spring = "6.1.14"
 aspectjweaver = "1.9.19"
 jackson = "2.16.1"
 postgresql = "42.7.3"
+hibernate = "6.4.4.Final"
+ehcache = "3.10.8"
+jsr107 = "1.1.1"
+jaxb = "4.0.0"
+jaxbR = "4.0.2"
+activation = "2.1.2"
+slf4j = "2.0.16"
+logback = "1.5.13"
+
+
+
 
 [libraries]
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring" }
 spring-aop = { module = "org.springframework:spring-aop", version.ref = "spring" }
-spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "spring" }
+spring-orm = { module = "org.springframework:spring-orm", version.ref = "spring" }
 aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectjweaver" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hibernate" }
+ehcache-core = { module = "org.ehcache:ehcache", version.ref = "ehcache"  }
+hibernate-jcache = { module = "org.hibernate.orm:hibernate-jcache", version.ref = "hibernate" }
+jsr107-api = { module = "javax.cache:cache-api", version.ref = "jsr107" }
+jaxb-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jaxb" }
+jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxbR" }
+activation = { module = "jakarta.activation:jakarta.activation-api", version.ref = "activation" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }

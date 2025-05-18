@@ -1,89 +1,73 @@
 package library.service;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import library.model.Genre;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Service;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Service
 public class GenreService {
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionFactory sessionFactory;
 
-    public GenreService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public GenreService(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
     public void createGenre(String name) {
-        String sql = "INSERT INTO genres (name) VALUES (?) ON CONFLICT (name) DO NOTHING";
-        jdbcTemplate.update(sql, name);
-    }
-
-    public void updateGenre(int id, String name) {
-        String sql = "UPDATE genres SET name = ? WHERE id = ?";
-        int rows = jdbcTemplate.update(sql, name, id);
-        if (rows == 0) {
-            throw new IllegalArgumentException("Genre with ID " + id + " not found");
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Genre genre = new Genre(name);
+            session.persist(genre);
+            session.getTransaction().commit();
         }
     }
 
-    public void deleteGenre(int id) {
-        String sql = "DELETE FROM genres WHERE id = ?";
-        int rows = jdbcTemplate.update(sql, id);
-        if (rows == 0) {
-            throw new IllegalArgumentException("Genre with ID " + id + " not found");
+    public void updateGenre(Long id, String name) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Genre genre = session.get(Genre.class, id);
+            if (genre == null) {
+                throw new IllegalArgumentException("Genre with ID " + id + " not found");
+            }
+            genre.setName(name);
+            session.merge(genre);
+            session.getTransaction().commit();
+        }
+    }
+
+    public void deleteGenre(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Genre genre = session.get(Genre.class, id);
+            if (genre == null) {
+                throw new IllegalArgumentException("Genre with ID " + id + " not found");
+            }
+            session.remove(genre);
+            session.getTransaction().commit();
         }
     }
 
     public List<Genre> getAllGenres() {
-        String sql = "SELECT id, name FROM genres";
-        return jdbcTemplate.query(sql, new GenreRowMapper());
-    }
-
-    public Genre getGenreById(int id) {
-        String sql = "SELECT id, name FROM genres WHERE id = ?";
-        List<Genre> genres = jdbcTemplate.query(sql, new GenreRowMapper(), id);
-        if (genres.isEmpty()) {
-            throw new IllegalArgumentException("Genre with ID " + id + " not found");
-        }
-        return genres.get(0);
-    }
-
-    public boolean genreExists(int id) {
-        String sql = "SELECT COUNT(*) FROM genres WHERE id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
-        return count != null && count > 0;
-    }
-
-    public static class Genre {
-        private int id;
-        private String name;
-
-        public Genre(int id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return "Genre{id=" + id + ", name='" + name + "'}";
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM Genre", Genre.class).setCacheable(true).getResultList();
         }
     }
 
-    private static class GenreRowMapper implements RowMapper<Genre> {
-        @Override
-        public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new Genre(rs.getInt("id"), rs.getString("name"));
+    public Genre getGenreById(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            Genre genre = session.get(Genre.class, id);
+            if (genre == null) {
+                throw new IllegalArgumentException("Genre with ID " + id + " not found");
+            }
+            return genre;
+        }
+    }
+
+    public boolean genreExists(Long id) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.get(Genre.class, id) != null;
         }
     }
 }

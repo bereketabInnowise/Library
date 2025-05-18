@@ -20,10 +20,10 @@ public class InputHandler {
         return Integer.parseInt(scanner.nextLine().trim());
     }
 
-    public int getValidId(String promptKey) {
+    public Long getValidId(String promptKey) {
         System.out.print(messageSource.getMessage(promptKey, null, locale));
         try {
-            return Integer.parseInt(scanner.nextLine().trim());
+            return Long.parseLong(scanner.nextLine().trim());
         } catch (NumberFormatException e) {
             throw new NumberFormatException(messageSource.getMessage("app.error.id.invalid", null, locale));
         }
