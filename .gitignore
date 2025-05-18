@@ -4,4 +4,3 @@
 /build/
 .env
 ./src/main/resources/application-local.properties
-./src/main/resources/hibernate-local.properties

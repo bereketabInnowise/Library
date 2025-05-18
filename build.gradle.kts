@@ -8,6 +8,7 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
 }
+
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
@@ -36,12 +37,15 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.compilerArgs.add("-parameters")
 }
+
+//create fully functional .jar file
 tasks.jar {
     manifest {
         attributes["Main-Class"] = "library.LibraryApplication"
     }
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE  // Handle duplicate files
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
 // Define CSV path as a property for injection
 extra["csvPath"] = "src/main/resources/books.csv"
