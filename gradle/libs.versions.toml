@@ -2,10 +2,13 @@
 spring = "6.1.14"
 aspectjweaver = "1.9.19"
 jackson = "2.16.1"
+postgresql = "42.7.3"
 
 [libraries]
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring" }
 spring-aop = { module = "org.springframework:spring-aop", version.ref = "spring" }
+spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "spring" }
 aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectjweaver" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-dataformat-csv = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-csv", version.ref = "jackson" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
