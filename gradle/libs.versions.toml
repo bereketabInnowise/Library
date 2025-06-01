@@ -12,8 +12,8 @@ activation = "2.1.2"
 slf4j = "2.0.16"
 logback = "1.5.12"
 #REST
-spring-boot = "3.3.5" # or the latest stable version
-liquibase = "4.29.2" # check for latest version
+spring-boot = "3.3.5"
+liquibase = "4.29.2"
 hikaricp = "6.0.0"
 
 
