@@ -2,4 +2,5 @@
 .idea/
 *.iml
 /build/
+.env
 ./src/main/resources/application.properties
