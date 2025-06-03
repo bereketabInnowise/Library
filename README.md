@@ -1,79 +1,109 @@
-# Library Management System
+# Library REST API
 
-A simple console-based CRUD application for managing books, built with Spring and Jackson CSV Mapper. This project demonstrates Inversion of Control (IoC), Dependency Injection (DI), and the Single Responsibility Principle (SRP) using a lightweight Spring setup without Spring Boot.
+## Overview
+This project implements a RESTful API for managing a library's books, authors, and genres, developed as part of Task 6 for the Spring-based "Library" application. The API replaces a console-based UI with HTTP endpoints, built using Spring Boot, Spring MVC, Spring Data JPA, Liquibase, and PostgreSQL. The project includes Postman collections for testing and comprehensive documentation.
 
-## Features
-- **CRUD Operations**: Create, read, update, and delete books stored in a CSV file.
-- **Console Interface**: User-friendly menu with options:
-  1. Display book list
-  2. Create new book
-  3. Edit book (with partial updates)
-  4. Delete book
-  0. Save and exit
-- **CSV Storage**: Books are stored in `src/main/resources/books.csv` with format: `id,title,author,description`.
-- **Spring IoC**: Uses annotation-based configuration for dependency management.
+## Task 6 Requirements
+- **Postman Setup**: Installed Postman, tested `https://httpbin.org`, and created/exported a collection (`HttpBinCollection.postman_collection.json`).
+- **API Design**: Designed REST API endpoints and models per best practices (`LibraryAPI.md`).
+- **Spring Data JPA**: Rewrote database queries using JPA repositories (`BookRepository`, etc.).
+- **Liquibase**: Added Liquibase for database migrations (`db.changelog-master.yaml`).
+- **Spring MVC**: Implemented API endpoints using Spring MVC (`BookController`, etc.).
+- **Postman Collection**: Created a Postman collection for the Library API (`LibraryAPICollection.postman_collection.json`).
 
-## Technical Stack
-- **Java**: 21
-- **Gradle**: Build tool with Kotlin DSL (`build.gradle.kts`)
-- **Spring**: `spring-context` (6.1.5) for IoC and DI, no Spring Boot
-- **Jackson**: `jackson-databind` and `jackson-dataformat-csv` (2.16.1) for CSV handling
-
-
+## Project Structure
+- `src/main/java/library/`
+  - `controller/`: REST controllers (`BookController`, `AuthorController`, `GenreController`).
+  - `service/`: Business logic (`BookService`, `AuthorService`, `GenreService`).
+  - `repository/`: JPA repositories (`BookRepository`, `AuthorRepository`, `GenreRepository`).
+  - `dto/`: Data Transfer Objects (`BookDTO`, `BookCreateDTO`, etc.).
+  - `mapper/`: Entity-DTO conversion (`LibraryMapper`).
+  - `exception/`: Global exception handling (`GlobalExceptionHandler`).
+  - `model/`: JPA entities (`Book`, `Author`, `Genre`).
+  - `config/`: Spring configuration (`WebConfig` for AOP, `MessageSource`).
+- `src/main/resources/`
+  - `application.properties`: DB, JPA, Liquibase, EHCache settings.
+  - `db/changelog/`: Liquibase migrations (`01-create-tables.yaml`, `02-insert-test-data.yaml`).
+- `docs/`
+  - `LibraryAPI.md`: REST API design.
+  - `HttpBinCollection.postman_collection.json`: Postman collection for `httpbin.org`.
+  - `LibraryAPICollection.postman_collection.json`: Postman collection for Library API.
 
 ## Setup Instructions
-### Prerequisites
-- Java 21 JDK
-- Gradle (or use the included Gradle Wrapper)
+1. **Prerequisites**:
+   - Java 21
+   - Gradle 8.x
+   - PostgreSQL (create database `library`)
+   - Postman (for API testing)
 
-### Build and Run
-1. **Clone the Repository**:
+2. **Clone Repository**:
    ```bash
-   git clone https://github.com/yourusername/Library.git
+   git clone https://github.com/bereketabInnowise/Library.git
    cd Library
    ```
-2. **Build the Project**:
+
+3. **Configure Database**:
+   - Ensure PostgreSQL is running.
+   - Create database:
+     ```bash
+     psql -U postgres -c "CREATE DATABASE library;"
+     ```
+   - Create `src/main/resources/application.properties`:
+     ```properties
+     spring.datasource.username=yourusername
+     spring.datasource.password=yourpassword
+     ```
+
+4. **Build and Run**:
    ```bash
    ./gradlew clean build
+   ./gradlew bootRun
    ```
-   - Creates `build/libs/Library-1.0-SNAPSHOT.jar`
-3. **Run the Application**:
-   ```bash
-   java -jar build/libs/Library-1.0-SNAPSHOT.jar
-   ```
-4. **Interact**:
-   - Use the console menu to manage books.
-   - Changes are saved to `books.csv`.
+   - App runs on `http://localhost:8080`.
+   - Liquibase creates tables (`books`, `authors`, `genres`, `book_genres`) and inserts test data.
 
-### Sample CSV (`books.csv`)
-```
-id,title,author,description
-1,"The Catcher in the Rye","J.D. Salinger","A classic novel about teenage rebellion."
-2,"My Dog",Pesco,"About Pesco's dog"
-3,"Advanced Java",Tom,"Advanced Java Programming"
-4,Jhonny,Maria,"Jhonny's day dream"
-```
+5. **Test API with Postman**:
+   - Import `docs/LibraryAPICollection.postman_collection.json` into Postman.
+   - Test endpoints (e.g., `GET http://localhost:8080/api/v1/books`).
+   - Refer to `docs/LibraryAPI.md` for endpoint details.
 
-## Spring Concepts Demonstrated
-### Inversion of Control (IoC)
-- The Spring container (`AnnotationConfigApplicationContext`) manages object creation and dependency injection, inverting control from the application code to the framework.
+## API Endpoints
+See `docs/LibraryAPI.md` for full details. Key endpoints:
+- **Books**: `GET /api/v1/books`, `POST /api/v1/books`, `PATCH /api/v1/books/{id}`, etc.
+- **Authors**: `GET /api/v1/authors`, `POST /api/v1/authors`, etc.
+- **Genres**: `GET /api/v1/genres`, `POST /api/v1/genres`, etc.
 
-### Dependency Injection (DI)
-- **Constructor DI**: `ConsoleInterface` receives `BookService` via constructor.
-- **Setter DI**: `BookRepository` uses a setter for `csvPath`.
-- **Field DI**: Previously used in `BookService` (now constructor-based for best practice).
+## Features
+- **REST Best Practices**: Versioned URLs (`/api/v1/`), standard HTTP methods, status codes.
+- **Pagination**: Supported via `?page=0&size=10`.
+- **Error Handling**: Standardized JSON errors (`ErrorResponseDTO`).
+- **AOP Logging**: Enabled via `WebConfig` (method execution logging).
+- **EHCache**: Second-level cache for JPA queries (`missing_cache_strategy=create`).
+- **Liquibase**: Manages DB schema and test data.
 
-### Context Configuration
-- `AppConfig` uses `@Configuration` and `@ComponentScan` to define and discover beans.
-- No XML, fully annotation-driven.
+## Testing
+- **Postman**: Use `LibraryAPICollection.postman_collection.json` to test all endpoints.
+- **Database**: Verify data:
+  ```bash
+  psql -U postgres -d library -c "SELECT * FROM books;"
+  ```
+- **Build**: Ensure no errors:
+  ```bash
+  ./gradlew clean build
+  ```
 
-## Design Principles
-- **Single Responsibility Principle (SRP)**:
-  - `Book`: Data model
-  - `BookRepository`: CSV operations
-  - `BookService`: Business logic
-  - `ConsoleInterface`: User interaction
-  - `AppConfig`: Dependency wiring
+## Notes
+- Console UI removed, fully REST-based.
+
+
+## Deliverables
+- `docs/LibraryAPI.md`: API design.
+- `docs/HttpBinCollection.postman_collection.json`: `httpbin.org` tests.
+- `docs/LibraryAPICollection.postman_collection.json`: Library API tests.
+- Source code: `rest-task` branch.
+
 
 ## Author
 Bereketab: bereketab.shanka@innowise.com questions or feedback welcome!
+
+Have a Good day!

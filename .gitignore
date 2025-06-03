@@ -2,6 +2,4 @@
 .idea/
 *.iml
 /build/
-.env
-./src/main/resources/application-local.properties
-./src/main/resources/hibernate-local.properties
+./src/main/resources/application.properties
