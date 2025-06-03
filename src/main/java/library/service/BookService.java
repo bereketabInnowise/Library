@@ -41,6 +41,13 @@ public class BookService {
     public List<Book> getBooksByAuthorId(Long authorId) {
         return bookRepository.findByAuthorId(authorId);
     }
+    public Optional<Author> getAuthorById(Long authorId) {
+        return authorRepository.findById(authorId);
+    }
+
+    public List<Genre> getGenresByIds(List<Long> genreIds) {
+        return genreRepository.findAllById(genreIds);
+    }
 
     @Transactional
     public Book createBook(String title, String description, Long authorId, List<Long> genreIds) {
@@ -82,4 +89,5 @@ public class BookService {
         }
         bookRepository.deleteById(id);
     }
+
 }

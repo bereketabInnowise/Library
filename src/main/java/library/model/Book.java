@@ -1,6 +1,7 @@
 package library.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -11,6 +12,7 @@ import java.util.List;
 @Table(name = "books")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@BatchSize(size = 10)
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_seq")
@@ -19,6 +21,7 @@ public class Book {
 
     @Column(nullable = false)
     private String title;
+
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id", nullable = false)
