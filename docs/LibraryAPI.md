@@ -60,10 +60,9 @@ REST API for managing books, authors, and genres in the Library app, adhering to
   - **Description**: Delete a book.
   - **Path Param**: `id` (int)
   - **Response**: `204 No Content`, `404 Not Found`
-- **GET /api/v1/authors/{authorId}/books**
-  - **Description**: List books by author (paginated).
+- **GET /api/v1/books/authors/{authorId}/books**
+  - **Description**: List books by author.
   - **Path Param**: `authorId` (int)
-  - **Query Params**: `page`, `size`
   - **Response**: `200 OK` (List<BookDTO>)
 
 ### Authors

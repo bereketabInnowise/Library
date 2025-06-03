@@ -94,7 +94,7 @@ public class BookController {
     }
 
     @GetMapping("/authors/{authorId}/books")
-    public ResponseEntity<List<BookDTO>> getBooksByAuthor(@PathVariable Long authorId, Pageable pageable) {
+    public ResponseEntity<List<BookDTO>> getBooksByAuthor(@PathVariable Long authorId) {
         List<BookDTO> dtos = bookService.getBooksByAuthorId(authorId).stream()
                 .map(LibraryMapper::toBookDTO)
                 .collect(Collectors.toList());
