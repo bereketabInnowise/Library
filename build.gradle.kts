@@ -1,5 +1,7 @@
 plugins {
     id("java")
+    id("org.springframework.boot") version "3.3.5"
+    id("io.spring.dependency-management") version "1.1.6"
 }
 
 group = "library"
@@ -31,6 +33,12 @@ dependencies {
     implementation(libs.activation)
     implementation(libs.slf4j.api)
     implementation(libs.logback.classic)
+//    REST and Spring-boot
+    implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.liquibase.core)
+    implementation(libs.hikaricp)
 }
 
 tasks.withType<JavaCompile> {
@@ -41,7 +49,7 @@ tasks.withType<JavaCompile> {
 //create fully functional .jar file
 tasks.jar {
     manifest {
-        attributes["Main-Class"] = "library.LibraryApplication"
+        attributes["Main-Class"] = "library.Application"
     }
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE

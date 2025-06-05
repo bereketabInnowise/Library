@@ -1,0 +1,103 @@
+databaseChangeLog:
+  # Create sequences first
+  - changeSet:
+      id: 01-create-sequences
+      author: bereketab
+      changes:
+        - createSequence:
+            sequenceName: authors_id_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: genres_id_seq
+            startValue: 1
+            incrementBy: 1
+        - createSequence:
+            sequenceName: books_id_seq
+            startValue: 1
+            incrementBy: 1
+
+  # Create tables with proper sequence references
+  - changeSet:
+      id: 02-create-tables
+      author: bereketab
+      changes:
+        - createTable:
+            tableName: authors
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  defaultValueSequenceNext: "authors_id_seq"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: genres
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  defaultValueSequenceNext: "genres_id_seq"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: books
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  defaultValueSequenceNext: "books_id_seq"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+              - column:
+                  name: author_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_book_author
+                    references: authors(id)
+
+        - createTable:
+            tableName: book_genres
+            columns:
+              - column:
+                  name: book_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_book_genres_book
+                    references: books(id)
+              - column:
+                  name: genre_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_book_genres_genre
+                    references: genres(id)
+            constraints:
+              - primaryKey:
+                  name: pk_book_genres
+                  columns: book_id, genre_id

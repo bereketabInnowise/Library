@@ -10,13 +10,16 @@ jaxb = "4.0.0"
 jaxbR = "4.0.2"
 activation = "2.1.2"
 slf4j = "2.0.16"
-logback = "1.5.13"
+logback = "1.5.12"
+#REST
+spring-boot = "3.3.5"
+liquibase = "4.29.2"
+hikaricp = "6.0.0"
 
 
 [libraries]
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring" }
 spring-aop = { module = "org.springframework:spring-aop", version.ref = "spring" }
-
 spring-orm = { module = "org.springframework:spring-orm", version.ref = "spring" }
 aspectjweaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectjweaver" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
@@ -31,3 +34,9 @@ jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb
 activation = { module = "jakarta.activation:jakarta.activation-api", version.ref = "activation" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+#REST
+spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring-boot" }
+liquibase-core = { module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
+hikaricp = {module="com.zaxxer:HikariCP", version.ref = "hikaricp"}

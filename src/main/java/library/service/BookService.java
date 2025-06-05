@@ -1,89 +1,93 @@
 package library.service;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Root;
+import library.model.Author;
 import library.model.Book;
 import library.model.Genre;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import library.repository.AuthorRepository;
+import library.repository.BookRepository;
+import library.repository.GenreRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@Transactional
 public class BookService {
-    private final SessionFactory sessionFactory;
 
-    public BookService(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
+    private final GenreRepository genreRepository;
+
+    @Autowired
+    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, GenreRepository genreRepository) {
+        this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
+        this.genreRepository = genreRepository;
     }
 
-    public void createBook(Book book) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.persist(book);
-            session.getTransaction().commit();
+    public Page<Book> getAllBooks(Pageable pageable) {
+        return bookRepository.findAll(pageable);
+    }
+
+    public Optional<Book> getBookById(Long id) {
+        return bookRepository.findById(id);
+    }
+
+    public List<Book> getBooksByAuthorId(Long authorId) {
+        return bookRepository.findByAuthorId(authorId);
+    }
+    public Optional<Author> getAuthorById(Long authorId) {
+        return authorRepository.findById(authorId);
+    }
+
+    public List<Genre> getGenresByIds(List<Long> genreIds) {
+        return genreRepository.findAllById(genreIds);
+    }
+
+    @Transactional
+    public Book createBook(String title, String description, Long authorId, List<Long> genreIds) {
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        List<Genre> genres = genreRepository.findAllById(genreIds);
+        if (genres.size() != genreIds.size()) {
+            throw new IllegalArgumentException("Some genres not found");
         }
+        Book book = new Book();
+        book.setTitle(title);
+        book.setDescription(description);
+        book.setAuthor(author);
+        book.setGenres(genres);
+        return bookRepository.save(book);
     }
 
-    public void updateBook(Long id, Book updatedBook) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            Book existingBook = session.get(Book.class, id);
-            if (existingBook == null) {
-                throw new IllegalArgumentException("Book with ID " + id + " not found");
-            }
-            existingBook.setTitle(updatedBook.getTitle());
-            existingBook.setAuthor(updatedBook.getAuthor());
-            existingBook.setDescription(updatedBook.getDescription());
-            existingBook.getGenres().clear();
-            existingBook.getGenres().addAll(updatedBook.getGenres());
-            session.merge(existingBook);
-            session.getTransaction().commit();
+    @Transactional
+    public Book updateBook(Long id, String title, String description, Long authorId, List<Long> genreIds) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        List<Genre> genres = genreRepository.findAllById(genreIds);
+        if (genres.size() != genreIds.size()) {
+            throw new IllegalArgumentException("Some genres not found");
         }
+        book.setTitle(title);
+        book.setDescription(description);
+        book.setAuthor(author);
+        book.setGenres(genres);
+        return bookRepository.save(book);
     }
 
+    @Transactional
     public void deleteBook(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            Book book = session.get(Book.class, id);
-            if (book == null) {
-                throw new IllegalArgumentException("Book with ID " + id + " not found");
-            }
-            session.remove(book);
-            session.getTransaction().commit();
+        if (!bookRepository.existsById(id)) {
+            throw new IllegalArgumentException("Book not found");
         }
+        bookRepository.deleteById(id);
     }
 
-    public List<Book> getAllBooks() {
-        try (Session session = sessionFactory.openSession()) {
-            CriteriaBuilder cb = session.getCriteriaBuilder();
-            CriteriaQuery<Book> cq = cb.createQuery(Book.class);
-            Root<Book> root = cq.from(Book.class);
-            root.fetch("author", JoinType.LEFT);
-            root.fetch("genres", JoinType.LEFT);
-            cq.select(root);
-            return session.createQuery(cq).setCacheable(true).getResultList();
-        }
-    }
-
-    public Book getBookById(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            Book book = session.get(Book.class, id);
-            if (book == null) {
-                throw new IllegalArgumentException("Book with ID " + id + " not found");
-            }
-            // Initialize lazy collections
-            book.getGenres().size();
-            return book;
-        }
-    }
-
-    public boolean bookExists(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(Book.class, id) != null;
-        }
-    }
 }
