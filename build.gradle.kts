@@ -21,7 +21,16 @@ dependencies {
     implementation(libs.jackson.databind)
     implementation(libs.jackson.dataformat.csv)
     implementation(libs.postgresql)
-    implementation(libs.spring.jdbc)
+    implementation(libs.spring.orm)
+    implementation(libs.hibernate.core)
+    implementation(libs.ehcache.core)
+    implementation(libs.hibernate.jcache)
+    implementation(libs.jsr107.api)
+    implementation(libs.jaxb.api)
+    implementation(libs.jaxb.runtime)
+    implementation(libs.activation)
+    implementation(libs.slf4j.api)
+    implementation(libs.logback.classic)
 }
 
 tasks.withType<JavaCompile> {
