@@ -1,72 +1,54 @@
 package library.service;
 
 import library.model.Author;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import library.repository.AuthorRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
+@Transactional
 public class AuthorService {
-    private final SessionFactory sessionFactory;
 
-    public AuthorService(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    private final AuthorRepository authorRepository;
+
+    @Autowired
+    public AuthorService(AuthorRepository authorRepository) {
+        this.authorRepository = authorRepository;
     }
 
-    public void createAuthor(String name) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.persist(new Author(name));
-            session.getTransaction().commit();
-        }
+    public Page<Author> getAllAuthors(Pageable pageable) {
+        return authorRepository.findAll(pageable);
     }
 
-    public void updateAuthor(Long id, String name) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            Author author = session.get(Author.class, id);
-            if (author == null) {
-                throw new IllegalArgumentException("Author with ID " + id + " not found");
-            }
-            author.setName(name);
-            session.merge(author);
-            session.getTransaction().commit();
-        }
+    public Optional<Author> getAuthorById(Long id) {
+        return authorRepository.findById(id);
     }
 
+    @Transactional
+    public Author createAuthor(String name) {
+        Author author = new Author();
+        author.setName(name);
+        return authorRepository.save(author);
+    }
+
+    @Transactional
+    public Author updateAuthor(Long id, String name) {
+        Author author = authorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        author.setName(name);
+        return authorRepository.save(author);
+    }
+
+    @Transactional
     public void deleteAuthor(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            Author author = session.get(Author.class, id);
-            if (author == null) {
-                throw new IllegalArgumentException("Author with ID " + id + " not found");
-            }
-            session.remove(author);
-            session.getTransaction().commit();
+        if (!authorRepository.existsById(id)) {
+            throw new IllegalArgumentException("Author not found");
         }
-    }
-
-    public List<Author> getAllAuthors() {
-        try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM Author", Author.class).setCacheable(true).getResultList();
-        }
-    }
-
-    public Author getAuthorById(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            Author author = session.get(Author.class, id);
-            if (author == null) {
-                throw new IllegalArgumentException("Author with ID " + id + " not found");
-            }
-            return author;
-        }
-    }
-
-    public boolean authorExists(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(Author.class, id) != null;
-        }
+        authorRepository.deleteById(id);
     }
 }

@@ -1,73 +1,54 @@
 package library.service;
 
 import library.model.Genre;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import library.repository.GenreRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
+@Transactional
 public class GenreService {
-    private final SessionFactory sessionFactory;
 
-    public GenreService(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    private final GenreRepository genreRepository;
+
+    @Autowired
+    public GenreService(GenreRepository genreRepository) {
+        this.genreRepository = genreRepository;
     }
 
-    public void createGenre(String name) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            Genre genre = new Genre(name);
-            session.persist(genre);
-            session.getTransaction().commit();
-        }
+    public Page<Genre> getAllGenres(Pageable pageable) {
+        return genreRepository.findAll(pageable);
     }
 
-    public void updateGenre(Long id, String name) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            Genre genre = session.get(Genre.class, id);
-            if (genre == null) {
-                throw new IllegalArgumentException("Genre with ID " + id + " not found");
-            }
-            genre.setName(name);
-            session.merge(genre);
-            session.getTransaction().commit();
-        }
+    public Optional<Genre> getGenreById(Long id) {
+        return genreRepository.findById(id);
     }
 
+    @Transactional
+    public Genre createGenre(String name) {
+        Genre genre = new Genre();
+        genre.setName(name);
+        return genreRepository.save(genre);
+    }
+
+    @Transactional
+    public Genre updateGenre(Long id, String name) {
+        Genre genre = genreRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Genre not found"));
+        genre.setName(name);
+        return genreRepository.save(genre);
+    }
+
+    @Transactional
     public void deleteGenre(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            Genre genre = session.get(Genre.class, id);
-            if (genre == null) {
-                throw new IllegalArgumentException("Genre with ID " + id + " not found");
-            }
-            session.remove(genre);
-            session.getTransaction().commit();
+        if (!genreRepository.existsById(id)) {
+            throw new IllegalArgumentException("Genre not found");
         }
-    }
-
-    public List<Genre> getAllGenres() {
-        try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM Genre", Genre.class).setCacheable(true).getResultList();
-        }
-    }
-
-    public Genre getGenreById(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            Genre genre = session.get(Genre.class, id);
-            if (genre == null) {
-                throw new IllegalArgumentException("Genre with ID " + id + " not found");
-            }
-            return genre;
-        }
-    }
-
-    public boolean genreExists(Long id) {
-        try (Session session = sessionFactory.openSession()) {
-            return session.get(Genre.class, id) != null;
-        }
+        genreRepository.deleteById(id);
     }
 }

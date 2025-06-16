@@ -1,0 +1,82 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-insert-test-data
+      author: bereketab
+      changes:
+        # Insert authors (IDs will be auto-generated)
+        - insert:
+            tableName: authors
+            columns:
+              - column:
+                  name: name
+                  value: "Frank Herbert"
+
+        - insert:
+            tableName: authors
+            columns:
+              - column:
+                  name: name
+                  value: "J.R.R. Tolkien"
+
+        # Insert genres (IDs will be auto-generated)
+        - insert:
+            tableName: genres
+            columns:
+              - column:
+                  name: name
+                  value: "Sci-Fi"
+
+        - insert:
+            tableName: genres
+            columns:
+              - column:
+                  name: name
+                  value: "Fantasy"
+
+        # Insert books (need to reference authors)
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: "Dune"
+              - column:
+                  name: description
+                  value: "A sci-fi epic about a desert planet."
+              - column:
+                  name: author_id
+                  valueComputed: "(SELECT id FROM authors WHERE name = 'Frank Herbert')"
+
+        - insert:
+            tableName: books
+            columns:
+              - column:
+                  name: title
+                  value: "The Hobbit"
+              - column:
+                  name: description
+                  value: "A fantasy adventure."
+              - column:
+                  name: author_id
+                  valueComputed: "(SELECT id FROM authors WHERE name = 'J.R.R. Tolkien')"
+
+        # Insert book_genres relationships
+        - insert:
+            tableName: book_genres
+            columns:
+              - column:
+                  name: book_id
+                  valueComputed: "(SELECT id FROM books WHERE title = 'Dune')"
+              - column:
+                  name: genre_id
+                  valueComputed: "(SELECT id FROM genres WHERE name = 'Sci-Fi')"
+
+        - insert:
+            tableName: book_genres
+            columns:
+              - column:
+                  name: book_id
+                  valueComputed: "(SELECT id FROM books WHERE title = 'The Hobbit')"
+              - column:
+                  name: genre_id
+                  valueComputed: "(SELECT id FROM genres WHERE name = 'Fantasy')"
