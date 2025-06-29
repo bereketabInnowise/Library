@@ -18,6 +18,7 @@ public class LibraryMapper {
         dto.setDescription(book.getDescription());
         dto.setAuthor(toAuthorDTO(book.getAuthor()));
         dto.setGenres(book.getGenres().stream().map(LibraryMapper::toGenreDTO).collect(Collectors.toList()));
+        dto.setImageId(book.getImageId());
         return dto;
     }
 

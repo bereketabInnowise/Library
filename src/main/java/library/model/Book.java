@@ -38,13 +38,17 @@ public class Book {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private List<Genre> genres = new ArrayList<>();
 
+    @Column
+    private String imageId;
+
     public Book() {}
 
-    public Book(String title, Author author, String description, List<Genre> genres) {
+    public Book(String title, Author author, String description, List<Genre> genres, String imageId) {
         this.title = title;
         this.author = author;
         this.description = description;
         this.genres = genres != null ? genres : new ArrayList<>();
+        this.imageId = imageId;
     }
 
     public Long getId() {
@@ -86,6 +90,10 @@ public class Book {
     public void setGenres(List<Genre> genres) {
         this.genres = genres;
     }
+
+    public String getImageId(){ return imageId; }
+
+    public void setImageId(String imageId) { this.imageId = imageId; }
 
     @Override
     public String toString() {

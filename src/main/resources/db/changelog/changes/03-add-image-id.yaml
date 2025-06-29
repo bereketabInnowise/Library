@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-add-image-id
+      author: bereketab
+      changes:
+        - addColumn:
+            tableName: books
+            columns:
+              - column:
+                  name: image_id
+                  type: varchar(24)

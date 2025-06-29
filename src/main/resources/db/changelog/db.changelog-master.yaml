@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changes/01-create-tables.yaml
   - include:
       file: db/changelog/changes/02-insert-test-data.yaml
+  - include:
+      file: db/changelog/changes/03-add-image-id.yaml

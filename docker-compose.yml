@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   postgres:
     image: postgres:16
@@ -9,5 +10,19 @@ services:
       - ${DB_PORT}
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+
+  mongodb:
+    image: mongo:latest
+    container_name: Library_img
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
 volumes:
   pgdata:
+  mongodb_data:
+
