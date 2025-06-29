@@ -7,13 +7,21 @@ import library.mapper.LibraryMapper;
 import library.model.Book;
 import library.model.Genre;
 import library.service.BookService;
+import library.service.GridFsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,10 +30,12 @@ import java.util.stream.Collectors;
 public class BookController {
 
     private final BookService bookService;
+    private final GridFsService gridFsService;
 
     @Autowired
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, GridFsService gridFsService) {
         this.bookService = bookService;
+        this.gridFsService = gridFsService;
     }
 
     @GetMapping
@@ -92,6 +102,11 @@ public class BookController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+        Book book = bookService.getBookById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+        if (book.getImageId() != null) {
+            gridFsService.deleteFile(book.getImageId());
+        }
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
     }
@@ -102,5 +117,42 @@ public class BookController {
                 .map(LibraryMapper::toBookDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
+    }
+    @PostMapping("/{id}/image")
+    public ResponseEntity<BookDTO> uploadBookImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+        Book book = bookService.getBookById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+        // Delete existing image if present
+        if (book.getImageId() != null) {
+            gridFsService.deleteFile(book.getImageId());
+        }
+        // Store new image in GridFS
+        String imageId = gridFsService.storeFile(file);
+        // Update book with new imageId
+        Book updatedBook = bookService.updateImageId(id, imageId);
+        return ResponseEntity.ok(LibraryMapper.toBookDTO(updatedBook));
+    }
+
+    @GetMapping("/{id}/image")
+    public ResponseEntity<byte[]> getBookImage(@PathVariable Long id) throws IOException {
+        Book book = bookService.getBookById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+        if (book.getImageId() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        gridFsService.downloadFile(book.getImageId(), outputStream);
+        byte[] imageBytes = outputStream.toByteArray();
+        String filename = book.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + ".jpg";
+        String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+                .replace("+", "%20");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename);
+        headers.setContentLength(imageBytes.length);
+        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
     }
 }
