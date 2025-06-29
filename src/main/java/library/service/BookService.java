@@ -50,7 +50,7 @@ public class BookService {
     }
 
     @Transactional
-    public Book createBook(String title, String description, Long authorId, List<Long> genreIds) {
+    public Book createBook(String title, String description, Long authorId, List<Long> genreIds, String imageId) {
         Author author = authorRepository.findById(authorId)
                 .orElseThrow(() -> new IllegalArgumentException("Author not found"));
         List<Genre> genres = genreRepository.findAllById(genreIds);
@@ -62,11 +62,12 @@ public class BookService {
         book.setDescription(description);
         book.setAuthor(author);
         book.setGenres(genres);
+        book.setImageId(imageId);
         return bookRepository.save(book);
     }
 
     @Transactional
-    public Book updateBook(Long id, String title, String description, Long authorId, List<Long> genreIds) {
+    public Book updateBook(Long id, String title, String description, Long authorId, List<Long> genreIds, String imageId) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found"));
         Author author = authorRepository.findById(authorId)
@@ -79,6 +80,14 @@ public class BookService {
         book.setDescription(description);
         book.setAuthor(author);
         book.setGenres(genres);
+        book.setImageId(imageId);
+        return bookRepository.save(book);
+    }
+    @Transactional
+    public Book updateImageId(Long id, String imageId) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+        book.setImageId(imageId);
         return bookRepository.save(book);
     }
 

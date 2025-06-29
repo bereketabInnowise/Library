@@ -47,14 +47,14 @@ public class BookController {
     @PostMapping
     public ResponseEntity<BookDTO> createBook(@RequestBody BookCreateDTO dto) {
         Book book = bookService.createBook(dto.getTitle(), dto.getDescription(),
-                dto.getAuthorId(), dto.getGenreIds());
+                dto.getAuthorId(), dto.getGenreIds(), dto.getImageId());
         return new ResponseEntity<>(LibraryMapper.toBookDTO(book), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<BookDTO> updateBook(@PathVariable Long id, @RequestBody BookUpdateDTO dto) {
         Book book = bookService.updateBook(id, dto.getTitle(), dto.getDescription(),
-                dto.getAuthorId(), dto.getGenreIds());
+                dto.getAuthorId(), dto.getGenreIds(), dto.getImageId());
         return ResponseEntity.ok(LibraryMapper.toBookDTO(book));
     }
 
@@ -79,11 +79,14 @@ public class BookController {
                 throw new IllegalArgumentException("Some genres not found");
             }
         }
+        if (dto.getImageId() != null){
+            book.setImageId(dto.getImageId());
+        }
         Book updatedBook = bookService.updateBook(id, book.getTitle(), book.getDescription(),
                 book.getAuthor().getId(),
                 book.getGenres().stream()
                         .map(Genre::getId)
-                        .collect(Collectors.toList()));
+                        .collect(Collectors.toList()),book.getImageId());
         return ResponseEntity.ok(LibraryMapper.toBookDTO(updatedBook));
     }
 
