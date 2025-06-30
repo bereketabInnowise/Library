@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -89,14 +90,14 @@ public class BookController {
                 throw new IllegalArgumentException("Some genres not found");
             }
         }
-        if (dto.getImageId() != null){
+        if (dto.getImageId() != null) {
             book.setImageId(dto.getImageId());
         }
         Book updatedBook = bookService.updateBook(id, book.getTitle(), book.getDescription(),
                 book.getAuthor().getId(),
                 book.getGenres().stream()
                         .map(Genre::getId)
-                        .collect(Collectors.toList()),book.getImageId());
+                        .collect(Collectors.toList()), book.getImageId());
         return ResponseEntity.ok(LibraryMapper.toBookDTO(updatedBook));
     }
 
@@ -118,6 +119,7 @@ public class BookController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
+
     @PostMapping("/{id}/image")
     public ResponseEntity<BookDTO> uploadBookImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
@@ -136,23 +138,43 @@ public class BookController {
         return ResponseEntity.ok(LibraryMapper.toBookDTO(updatedBook));
     }
 
+    //    @GetMapping("/{id}/image")
+//    public ResponseEntity<byte[]> getBookImage(@PathVariable Long id) throws IOException {
+//        Book book = bookService.getBookById(id)
+//                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+//        if (book.getImageId() == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        gridFsService.downloadFile(book.getImageId(), outputStream);
+//        byte[] imageBytes = outputStream.toByteArray();
+//        String filename = book.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + ".jpg";
+//        String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
+//                .replace("+", "%20");
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.IMAGE_JPEG);
+//        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename);
+//        headers.setContentLength(imageBytes.length);
+//        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+//    }
+//}
     @GetMapping("/{id}/image")
-    public ResponseEntity<byte[]> getBookImage(@PathVariable Long id) throws IOException {
+    public ResponseEntity<StreamingResponseBody> getBookImage(@PathVariable Long id) throws IOException {
         Book book = bookService.getBookById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found"));
         if (book.getImageId() == null) {
             return ResponseEntity.notFound().build();
         }
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        gridFsService.downloadFile(book.getImageId(), outputStream);
-        byte[] imageBytes = outputStream.toByteArray();
         String filename = book.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + ".jpg";
         String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
                 .replace("+", "%20");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename);
-        headers.setContentLength(imageBytes.length);
-        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        StreamingResponseBody responseBody = outputStream -> {
+            gridFsService.downloadFile(book.getImageId(), outputStream);
+            outputStream.flush();
+        };
+        return new ResponseEntity<>(responseBody, headers, HttpStatus.OK);
     }
 }
