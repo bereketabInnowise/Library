@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 
 @ControllerAdvice
@@ -21,9 +22,15 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<ErrorResponseDTO> handleIOException(IOException ex) {
+        ErrorResponseDTO error = new ErrorResponseDTO("Error processing file: " + ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR.value(), ZonedDateTime.now());
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGenericException(Exception ex) {
-        logger.error("Unexpected error occurred", ex); // ✅ logs message and stack trace
+        logger.error("Unexpected error occurred", ex); // logs message and stack trace
 
         ErrorResponseDTO error = new ErrorResponseDTO(
                 "Internal server error",

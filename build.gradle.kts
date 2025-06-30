@@ -39,6 +39,9 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.liquibase.core)
     implementation(libs.hikaricp)
+//    MongoDB and GridFs
+    implementation(libs.spring.boot.starter.data.mongodb)
+//    implementation(libs.mongodb.driver.sync)
 }
 
 tasks.withType<JavaCompile> {

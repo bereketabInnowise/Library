@@ -7,6 +7,7 @@ public class BookCreateDTO {
     private String description;
     private Long authorId;
     private List<Long> genreIds;
+    private String imageId;
 
     // Getters and setters
     public String getTitle() { return title; }
@@ -17,4 +18,6 @@ public class BookCreateDTO {
     public void setAuthorId(Long authorId) { this.authorId = authorId; }
     public List<Long> getGenreIds() { return genreIds; }
     public void setGenreIds(List<Long> genreIds) { this.genreIds = genreIds; }
+    public String getImageId(){ return imageId;}
+    public void setImageId(String imageId){this.imageId = imageId;}
 }

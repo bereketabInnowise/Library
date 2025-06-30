@@ -15,6 +15,8 @@ logback = "1.5.12"
 spring-boot = "3.3.5"
 liquibase = "4.29.2"
 hikaricp = "6.0.0"
+#MongoDB
+mongodb = "4.11.1"
 
 
 [libraries]
@@ -40,3 +42,6 @@ spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-start
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring-boot" }
 liquibase-core = { module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
 hikaricp = {module="com.zaxxer:HikariCP", version.ref = "hikaricp"}
+#MongoDB
+spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb", version.ref = "spring-boot"}
+#mongodb-driver-sync = {module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb"}
