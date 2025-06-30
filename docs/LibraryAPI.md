@@ -64,6 +64,15 @@ REST API for managing books, authors, and genres in the Library app, adhering to
   - **Description**: List books by author.
   - **Path Param**: `authorId` (int)
   - **Response**: `200 OK` (List<BookDTO>)
+- **POST /api/v1/books/{id}/image**
+  - **Description**: Upload a book image.
+  - **Body**: `Form-data`, **key**=`file`, **value**=`test_image.jpg` (~100 MB).
+  - **Headers**: `Content-Type`: `multipart/form-data`
+  - **Response**: `200 OK`, BookDTO with imageId (e.g., "imageId": "60a1b2c3d4e5f6a7890b1c2d"), `404 Not Found`
+- **GET /api/v1/books/{id}/image**
+  - **Description**: Download a book image.
+  - **Respone-Headers**: `Content-Disposition`: `attachment; filename*=UTF-8''[BookTitle].jpg`
+  - **Response**: `200 OK`, file downloads as [BookTitle].jpg, `404 Not Found`
 
 ### Authors
 - **GET /api/v1/authors**
