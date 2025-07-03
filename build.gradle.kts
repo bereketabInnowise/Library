@@ -41,7 +41,11 @@ dependencies {
     implementation(libs.hikaricp)
 //    MongoDB and GridFs
     implementation(libs.spring.boot.starter.data.mongodb)
-//    implementation(libs.mongodb.driver.sync)
+//    Spring Security
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.jjwt.api)
+    runtimeOnly(libs.jjwt.impl)
+    runtimeOnly(libs.jjwt.jackson)
 }
 
 tasks.withType<JavaCompile> {

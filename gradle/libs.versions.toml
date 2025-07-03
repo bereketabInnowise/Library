@@ -15,8 +15,8 @@ logback = "1.5.12"
 spring-boot = "3.3.5"
 liquibase = "4.29.2"
 hikaricp = "6.0.0"
-#MongoDB
-mongodb = "4.11.1"
+#JWT
+jwt = "0.12.6"
 
 
 [libraries]
@@ -44,4 +44,8 @@ liquibase-core = { module = "org.liquibase:liquibase-core", version.ref = "liqui
 hikaricp = {module="com.zaxxer:HikariCP", version.ref = "hikaricp"}
 #MongoDB
 spring-boot-starter-data-mongodb = { module = "org.springframework.boot:spring-boot-starter-data-mongodb", version.ref = "spring-boot"}
-#mongodb-driver-sync = {module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb"}
+#Spring Security
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "spring-boot"}
+jjwt-api = {module = "io.jsonwebtoken:jjwt-api", version.ref = "jwt"}
+jjwt-impl = {module = "io.jsonwebtoken:jjwt-impl", version.ref = "jwt"}
+jjwt-jackson = {module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jwt"}

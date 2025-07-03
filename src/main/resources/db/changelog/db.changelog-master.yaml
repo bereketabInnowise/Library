@@ -5,3 +5,11 @@ databaseChangeLog:
       file: db/changelog/changes/02-insert-test-data.yaml
   - include:
       file: db/changelog/changes/03-add-image-id.yaml
+  - include:
+      file: db/changelog/changes/04-create-users-roles.yaml
+  - include:
+      file: db/changelog/changes/05-insert-test-users.yaml
+  - include:
+      file: db/changelog/changes/06-add-roles-id.yaml
+  - include:
+      file: db/changelog/changes/07-change-admin-password.yaml

@@ -125,7 +125,25 @@ REST API for managing books, authors, and genres in the Library app, adhering to
   - **Description**: Delete a genre.
   - **Path Param**: `id` (int)
   - **Response**: `204 No Content`, `404 Not Found`
-
+### Authentication
+- **POST /api/v1/register**
+  - **Description**: Register User with default role 'User'.
+  - **Body**: 
+  - ```json
+    {"username": "username", "password": "password"}
+    ```
+  - **Response**: `200 OK`: User registered successfully, `400 Bad Request`: Invalid input or username already exists.
+- **POST /api/v1/login**
+  - **Description**: Authenticates a user and returns a JWT in the Authorization header.
+  - **Body**:
+  - ```json
+    {"username": "username", "password": "password"}
+    ```
+  - **Response**: `200 OK`: Login successful, JWT in Authorization header., `401 Unauthorized`: Bad credentials.
+- **GET /api/v1/admin/test**
+  - **Description**: Admin-only endpoint to test ROLE_ADMIN access. Requires JWT authentication.
+  - **Headers**: `Authorization: Bearer <jwt_token>` 
+  - **Response**: `200 OK`: Access granted for users with ROLE_ADMIN, `401 Unauthorized`: No or invalid JWT provided., `403 Forbidden`: User lacks ROLE_ADMIN (e.g., ROLE_USER).
 ## Models
 - **BookDTO**:
   ```json
