@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponseDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
-        ErrorResponseDTO error = new ErrorResponseDTO(ex.getMessage(), HttpStatus.BAD_REQUEST.value(), ZonedDateTime.now());
+        ErrorResponseDTO error = new ErrorResponseDTO(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<ErrorResponseDTO> handleIOException(IOException ex) {
-        ErrorResponseDTO error = new ErrorResponseDTO("Error processing file: " + ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR.value(), ZonedDateTime.now());
+        ErrorResponseDTO error = new ErrorResponseDTO("Error processing file: " + ex.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR.value());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -36,22 +36,20 @@ public class GlobalExceptionHandler {
 
         ErrorResponseDTO error = new ErrorResponseDTO(
                 "Internal server error",
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                ZonedDateTime.now()
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponseDTO> handleAuthenticationException(AuthenticationException ex) {
-        ErrorResponseDTO error = new ErrorResponseDTO("Unauthorized: " + ex.getMessage(),HttpStatus.UNAUTHORIZED.value(),
-                ZonedDateTime.now());
+        ErrorResponseDTO error = new ErrorResponseDTO("Unauthorized: " + ex.getMessage(),HttpStatus.UNAUTHORIZED.value());
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAccessDeniedException(AccessDeniedException ex) {
-        ErrorResponseDTO error = new ErrorResponseDTO("Access denied: " + ex.getMessage(),HttpStatus.FORBIDDEN.value(),
-                ZonedDateTime.now());
+        ErrorResponseDTO error = new ErrorResponseDTO("Access denied: " + ex.getMessage(),HttpStatus.FORBIDDEN.value()
+               );
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 }
