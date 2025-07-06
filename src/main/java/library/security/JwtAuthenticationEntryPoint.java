@@ -12,7 +12,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.ZonedDateTime;
 
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
@@ -23,10 +22,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        System.out.println(">>> JwtAuthenticationEntryPoint CALLED <<<");
+//        System.out.println(">>> JwtAuthenticationEntryPoint CALLED <<<");
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        ErrorResponseDTO error = new ErrorResponseDTO("Unauthorized: " + authException.getMessage(), HttpStatus.UNAUTHORIZED.value());
+        ErrorResponseDTO error = new ErrorResponseDTO("Unauthorized: Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED.value());
+
         response.getWriter().write(objectMapper.writeValueAsString(error));
     }
 }
