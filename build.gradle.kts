@@ -46,8 +46,21 @@ dependencies {
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
-}
+//    Test
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.test.container.postgres)
+    testImplementation(libs.test.container.junit)
+    testImplementation(libs.spring.security.test)
 
+
+
+}
+tasks.test {
+    useJUnitPlatform()
+    jvmArgs("-Xmx512m")
+}
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.compilerArgs.add("-parameters")
