@@ -10,6 +10,7 @@ version = "1.0.0-SNAPSHOT"
 allprojects {
     repositories {
         mavenCentral()
+        maven { url = uri("https://repo.spring.io/release")}
     }
 }
 
