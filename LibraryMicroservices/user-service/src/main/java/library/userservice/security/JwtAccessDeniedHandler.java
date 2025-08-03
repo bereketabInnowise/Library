@@ -1,9 +1,9 @@
-package library.security;
+package library.userservice.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import library.dto.ErrorResponseDTO;
+import library.userservice.dto.ErrorResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;

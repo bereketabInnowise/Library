@@ -1,4 +1,4 @@
-package library.security;
+package library.gateway.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

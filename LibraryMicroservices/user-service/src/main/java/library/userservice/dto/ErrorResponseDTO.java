@@ -1,4 +1,4 @@
-package library.dto;
+package library.userservice.dto;
 
 public class ErrorResponseDTO {
     private String error;
