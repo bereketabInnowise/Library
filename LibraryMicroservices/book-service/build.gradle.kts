@@ -1,7 +1,18 @@
 dependencies {
     implementation(platform(libs.spring.cloud.dependencies))
-//    implementation(libs.spring.boot.starter.web)
-}
-repositories {
-    mavenCentral()
+    implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.starter.data.mongodb)
+    implementation(libs.spring.cloud.starter.consul.discovery)
+    implementation(libs.spring.cloud.starter.config)
+    implementation(libs.spring.boot.starter.security)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.postgresql)
+    implementation(libs.liquibase)
+    implementation(libs.jjwt.api)
+    runtimeOnly(libs.jjwt.impl)
+    runtimeOnly(libs.jjwt.jackson)
+//    implementation(libs.hibernate.core)
+//    implementation(libs.ehcache.core)
+//    implementation(libs.hibernate.jcache)
 }

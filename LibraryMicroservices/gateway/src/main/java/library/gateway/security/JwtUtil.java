@@ -4,9 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
@@ -15,7 +17,14 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtil {
 
-    private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+
+    @Value("${spring.jwt.secret}")
+    private String secretString;
+
+    // This key will be a static shared secret
+    private Key getSigningKey() {
+        return Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
+    }
     private final long expirationMs = 3600_000; // 1 hour
 
     public String getUsernameFromToken(String token) {
@@ -54,7 +63,7 @@ public class JwtUtil {
 
     private Claims getAllClaimsFromToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

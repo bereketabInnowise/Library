@@ -1,1 +1,5 @@
 databaseChangeLog:
+  - include:
+      file: changelog/changes/01-create-users-roles.yaml
+  - include:
+      file: changelog/changes/02-insert-test-users.yaml

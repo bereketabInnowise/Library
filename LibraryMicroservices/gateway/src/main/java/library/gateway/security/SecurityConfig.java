@@ -34,8 +34,8 @@ public class SecurityConfig {
                 })
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                .authenticationManager(authenticationManager)
-                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+//                .authenticationManager(authenticationManager)
+//                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(auth -> auth
                         .pathMatchers("/actuator/**").permitAll()
                         .pathMatchers("/api/v1/login", "/api/v1/register").permitAll()

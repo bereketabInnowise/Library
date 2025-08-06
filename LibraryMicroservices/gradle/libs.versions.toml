@@ -9,6 +9,8 @@ postgresql = "42.6.0"
 mongodb = "4.10.2"
 resilience4j = "2.2.0"
 liquibase = "4.24.0"
+hibernate = "6.4.4.Final"
+ehcache = "3.10.8"
 
 [libraries]
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
@@ -24,7 +26,8 @@ spring-cloud-dependencies = { module = "org.springframework.cloud:spring-cloud-d
 
 spring-security-web = { module = "org.springframework.security:spring-security-web", version.ref = "spring-security" }
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring-boot" }
-#spring-security-webflux = { module = "org.springframework.security:spring-security-webflux", version.ref = "spring-security" }
+
+
 
 spring-cloud-starter-config = { module = "org.springframework.cloud:spring-cloud-starter-config"}
 spring-cloud-config-server = { module = "org.springframework.cloud:spring-cloud-config-server" }
@@ -40,3 +43,6 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" 
 mongodb-driver = { module = "org.mongodb:mongodb-driver-sync", version.ref = "mongodb" }
 resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
 liquibase = { module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
+hibernate-core = { module = "org.hibernate:hibernate-core", version.ref = "hibernate" }
+ehcache-core = { module = "org.ehcache:ehcache", version.ref = "ehcache"  }
+hibernate-jcache = { module = "org.hibernate.orm:hibernate-jcache", version.ref = "hibernate" }
