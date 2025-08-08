@@ -1,0 +1,102 @@
+package library.bookservice.service;
+
+import library.bookservice.model.Author;
+import library.bookservice.model.Book;
+import library.bookservice.model.Genre;
+import library.bookservice.repository.AuthorRepository;
+import library.bookservice.repository.BookRepository;
+import library.bookservice.repository.GenreRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@Transactional
+public class BookService {
+
+    private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
+    private final GenreRepository genreRepository;
+
+    @Autowired
+    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, GenreRepository genreRepository) {
+        this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
+        this.genreRepository = genreRepository;
+    }
+
+    public Page<Book> getAllBooks(Pageable pageable) {
+        return bookRepository.findAll(pageable);
+    }
+
+    public Optional<Book> getBookById(Long id) {
+        return bookRepository.findById(id);
+    }
+
+    public List<Book> getBooksByAuthorId(Long authorId) {
+        return bookRepository.findByAuthorId(authorId);
+    }
+    public Optional<Author> getAuthorById(Long authorId) {
+        return authorRepository.findById(authorId);
+    }
+
+    public List<Genre> getGenresByIds(List<Long> genreIds) {
+        return genreRepository.findAllById(genreIds);
+    }
+
+    @Transactional
+    public Book createBook(String title, String description, Long authorId, List<Long> genreIds, String imageId) {
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        List<Genre> genres = genreRepository.findAllById(genreIds);
+        if (genres.size() != genreIds.size()) {
+            throw new IllegalArgumentException("Some genres not found");
+        }
+        Book book = new Book();
+        book.setTitle(title);
+        book.setDescription(description);
+        book.setAuthor(author);
+        book.setGenres(genres);
+        book.setImageId(imageId);
+        return bookRepository.save(book);
+    }
+
+    @Transactional
+    public Book updateBook(Long id, String title, String description, Long authorId, List<Long> genreIds, String imageId) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+        List<Genre> genres = genreRepository.findAllById(genreIds);
+        if (genres.size() != genreIds.size()) {
+            throw new IllegalArgumentException("Some genres not found");
+        }
+        book.setTitle(title);
+        book.setDescription(description);
+        book.setAuthor(author);
+        book.setGenres(genres);
+        book.setImageId(imageId);
+        return bookRepository.save(book);
+    }
+    @Transactional
+    public Book updateImageId(Long id, String imageId) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+        book.setImageId(imageId);
+        return bookRepository.save(book);
+    }
+
+    @Transactional
+    public void deleteBook(Long id) {
+        if (!bookRepository.existsById(id)) {
+            throw new IllegalArgumentException("Book not found");
+        }
+        bookRepository.deleteById(id);
+    }
+
+}

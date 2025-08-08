@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: user-service
+  config:
+    import: configserver:http://localhost:8888
+  cloud:
+    config:
+      uri: http://localhost:8888
+    consul:
+      discovery:
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+        prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

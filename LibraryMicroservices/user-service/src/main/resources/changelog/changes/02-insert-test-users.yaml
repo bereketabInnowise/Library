@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-insert-test-users
+      author: bereketab
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: user
+              - column:
+                  name: password
+                  value: $2a$10$3zHz8Zb6Nk2g7asb0.3Q3O3o3z3y3z3y3z3y3z3y3z3y3z3y3z3y
+              - column:
+                  name: enabled
+                  valueBoolean: true
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: password
+                  value: '$2a$10$afTgN0c.1V5mPMryPaRI9u3JIfVFjNq25sJkN90MNrY.6W3zkbbeO'
+              - column:
+                  name: enabled
+                  valueBoolean: true
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: user_id
+                  value: 1
+              - column:
+                  name: role
+                  value: ROLE_USER
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: user_id
+                  value: 2
+              - column:
+                  name: role
+                  value: ROLE_ADMIN
