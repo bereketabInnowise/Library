@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/api/v1/authors")
@@ -30,7 +30,7 @@ public class AuthorController {
         Page<Author> authors = authorService.getAllAuthors(pageable);
         List<AuthorDTO> dtos = authors.getContent().stream()
                 .map(LibraryMapper::toAuthorDTO)
-                .collect(Collectors.toList());
+                .toList(); //collect(Collectors.toList()) is replaced to .toList sonar recommendation
         return ResponseEntity.ok(dtos);
     }
 

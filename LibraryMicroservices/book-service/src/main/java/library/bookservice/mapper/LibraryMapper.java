@@ -7,9 +7,11 @@ import library.bookservice.model.Author;
 import library.bookservice.model.Book;
 import library.bookservice.model.Genre;
 
-import java.util.stream.Collectors;
 
 public class LibraryMapper {
+
+    private LibraryMapper(){
+    }
 
     public static BookDTO toBookDTO(Book book) {
         BookDTO dto = new BookDTO();
@@ -17,7 +19,7 @@ public class LibraryMapper {
         dto.setTitle(book.getTitle());
         dto.setDescription(book.getDescription());
         dto.setAuthor(toAuthorDTO(book.getAuthor()));
-        dto.setGenres(book.getGenres().stream().map(LibraryMapper::toGenreDTO).collect(Collectors.toList()));
+        dto.setGenres(book.getGenres().stream().map(LibraryMapper::toGenreDTO).toList()); // from collector to only toList done
         dto.setImageId(book.getImageId());
         return dto;
     }

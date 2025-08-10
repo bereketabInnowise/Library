@@ -1,10 +1,7 @@
 package library.userservice.service;
 
-//import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import library.userservice.dto.BookDTO;
-import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -17,7 +14,6 @@ public class BookClientService {
     private final RestClient restClient;
 
     public BookClientService(@Qualifier("bookServiceRestClient") RestClient restClient) {
-        System.out.println(">> RestClient injected: " + restClient.getClass());
         this.restClient = restClient;
     }
 
@@ -30,7 +26,7 @@ public class BookClientService {
                 .body(List.class);
     }
 
-    public List<BookDTO> fallbackBooks(String username, String token, Throwable t) {
+    public List<BookDTO> fallbackBooks() {
         return Collections.emptyList();
     }
 }

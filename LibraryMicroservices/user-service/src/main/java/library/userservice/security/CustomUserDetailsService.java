@@ -34,7 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 true, // accountNonLocked
                 user.getRoles().stream()
                         .map(role -> new SimpleGrantedAuthority(role.getRole()))
-                        .collect(Collectors.toList())
+                        .toList()
         );
     }
 }

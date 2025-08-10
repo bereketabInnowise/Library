@@ -1,8 +1,5 @@
 package library.bookservice.dto;
 
-import library.bookservice.dto.AuthorDTO;
-import library.bookservice.dto.GenreDTO;
-
 import java.util.List;
 
 public class BookDTO {

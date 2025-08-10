@@ -22,7 +22,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//        System.out.println(">>> JwtAuthenticationEntryPoint CALLED <<<");
+
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         ErrorResponseDTO error = new ErrorResponseDTO("Unauthorized: Missing or invalid Authorization header", HttpStatus.UNAUTHORIZED.value());

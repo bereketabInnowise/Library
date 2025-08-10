@@ -3,6 +3,7 @@ dependencies {
     implementation(libs.spring.cloud.starter.gateway)
     implementation(libs.spring.cloud.starter.consul.discovery)
     implementation(libs.spring.cloud.starter.config)
+    implementation(libs.spring.cloud.starter.bootstrap)
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.resilience4j.spring.boot3)

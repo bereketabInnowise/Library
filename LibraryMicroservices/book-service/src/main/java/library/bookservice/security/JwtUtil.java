@@ -12,7 +12,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
 
 @Component
 public class JwtUtil {
@@ -51,14 +51,14 @@ public class JwtUtil {
                             @SuppressWarnings("unchecked")
                             Map<String, String> roleMap = (Map<String, String>) roleItem;
                             return new SimpleGrantedAuthority(roleMap.get("authority"));
-                        } else if (roleItem instanceof String) {
+                        } else if (roleItem instanceof String string) {
                             // If it's already a string, use it directly
-                            return new SimpleGrantedAuthority((String) roleItem);
+                            return new SimpleGrantedAuthority(string);
                         }
                         return null; // Handle unexpected types or throw an error
                     })
                     .filter(java.util.Objects::nonNull) // Filter out any nulls from unexpected types
-                    .collect(Collectors.toList());
+                    .toList();
         }
         return List.of(); // Return empty list if roles are not a list
     }

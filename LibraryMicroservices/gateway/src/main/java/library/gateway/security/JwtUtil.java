@@ -2,7 +2,6 @@ package library.gateway.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+
 
 @Component
 public class JwtUtil {
@@ -25,7 +24,7 @@ public class JwtUtil {
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secretString.getBytes(StandardCharsets.UTF_8));
     }
-    private final long expirationMs = 3600_000; // 1 hour
+
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
@@ -38,7 +37,7 @@ public class JwtUtil {
         if (roles instanceof Collection<?>) {
             return ((Collection<?>) roles).stream()
                     .map(role -> new SimpleGrantedAuthority(role.toString()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
         return Collections.emptyList();
