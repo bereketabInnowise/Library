@@ -1,7 +1,5 @@
 package library.bookservice.model;
 
-import library.bookservice.model.Author;
-import library.bookservice.model.Genre;
 import jakarta.persistence.*;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;

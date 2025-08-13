@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD Suppression 1.1//EN"
+        "https://checkstyle.sourceforge.io/dtds/suppressions_1_1.dtd">
+<suppressions>
+    <suppress checks="JavadocMethod" files=".*Test\.java"/>
+</suppressions>

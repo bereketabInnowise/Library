@@ -1,7 +1,5 @@
 package library.userservice.dto;
 
-import library.userservice.dto.AuthorDTO;
-import library.userservice.dto.GenreDTO;
 
 import java.util.List;
 

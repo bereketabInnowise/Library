@@ -1,5 +1,7 @@
 package library.gateway.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +22,7 @@ import java.util.List;
 public class JwtAuthenticationWebFilter implements WebFilter {
 
     private final JwtUtil jwtUtil;
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationWebFilter.class);
 
     public JwtAuthenticationWebFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -67,7 +70,8 @@ public class JwtAuthenticationWebFilter implements WebFilter {
             }
         } catch (Exception e) {
             // Invalid token - let it continue (will fail authorization)
-            System.out.println("JWT validation failed: " + e.getMessage());
+            LOGGER.error("JWT validation failed: {}", e.getMessage());
+
         }
 
         // Token invalid or validation failed - continue without authentication

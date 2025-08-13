@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 
 
@@ -33,6 +33,7 @@ public class BookController {
 
     private final BookService bookService;
     private final GridFsService gridFsService;
+    private static final String NOT_FOUND = "Book not found";
 
     @Autowired
     public BookController(BookService bookService, GridFsService gridFsService) {
@@ -45,7 +46,7 @@ public class BookController {
         Page<Book> books = bookService.getAllBooks(pageable);
         List<BookDTO> dtos = books.getContent().stream()
                 .map(LibraryMapper::toBookDTO)
-                .collect(Collectors.toList());
+                .toList(); //same as auth controller
         return ResponseEntity.ok(dtos);
     }
 
@@ -73,7 +74,7 @@ public class BookController {
     @PatchMapping("/{id}")
     public ResponseEntity<BookDTO> patchBook(@PathVariable Long id, @RequestBody BookUpdateDTO dto) {
         Book book = bookService.getBookById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND));
         if (dto.getTitle() != null) {
             book.setTitle(dto.getTitle());
         }
@@ -98,14 +99,14 @@ public class BookController {
                 book.getAuthor().getId(),
                 book.getGenres().stream()
                         .map(Genre::getId)
-                        .collect(Collectors.toList()), book.getImageId());
+                        .toList(), book.getImageId());
         return ResponseEntity.ok(LibraryMapper.toBookDTO(updatedBook));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         Book book = bookService.getBookById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND));
         if (book.getImageId() != null) {
             gridFsService.deleteFile(book.getImageId());
         }
@@ -117,7 +118,7 @@ public class BookController {
     public ResponseEntity<List<BookDTO>> getBooksByAuthor(@PathVariable Long authorId) {
         List<BookDTO> dtos = bookService.getBooksByAuthorId(authorId).stream()
                 .map(LibraryMapper::toBookDTO)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(dtos);
     }
 
@@ -127,7 +128,7 @@ public class BookController {
             throw new IllegalArgumentException("File is empty");
         }
         Book book = bookService.getBookById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND));
         // Delete existing image if present
         if (book.getImageId() != null) {
             gridFsService.deleteFile(book.getImageId());
@@ -139,30 +140,11 @@ public class BookController {
         return ResponseEntity.ok(LibraryMapper.toBookDTO(updatedBook));
     }
 
-    //    @GetMapping("/{id}/image")
-//    public ResponseEntity<byte[]> getBookImage(@PathVariable Long id) throws IOException {
-//        Book book = bookService.getBookById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
-//        if (book.getImageId() == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        gridFsService.downloadFile(book.getImageId(), outputStream);
-//        byte[] imageBytes = outputStream.toByteArray();
-//        String filename = book.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + ".jpg";
-//        String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.toString())
-//                .replace("+", "%20");
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.IMAGE_JPEG);
-//        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename);
-//        headers.setContentLength(imageBytes.length);
-//        return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
-//    }
-//}
+
     @GetMapping("/{id}/image")
     public ResponseEntity<StreamingResponseBody> getBookImage(@PathVariable Long id) throws IOException {
         Book book = bookService.getBookById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+                .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND));
         if (book.getImageId() == null) {
             return ResponseEntity.notFound().build();
         }

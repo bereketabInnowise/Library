@@ -10,6 +10,7 @@ import library.userservice.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+
     @Autowired
     public AuthService(AuthenticationManager authenticationManager,
                        UserRepository userRepository,
@@ -41,6 +43,8 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
     public ResponseEntity<String> register(RegisterRequestDTO request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists");
@@ -58,7 +62,10 @@ public class AuthService {
         role.setRole("ROLE_USER");
         roleRepository.save(role);
 
+        kafkaTemplate.send("user-registered", user.getUsername(), "User registered: " + user.getUsername());
+
         return ResponseEntity.ok("User registered successfully");
+
     }
 
     public ResponseEntity<String> login(LoginRequestDTO request) {
