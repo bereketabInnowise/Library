@@ -32,6 +32,8 @@ spring-cloud-starter-config = { module = "org.springframework.cloud:spring-cloud
 spring-cloud-config-server = { module = "org.springframework.cloud:spring-cloud-config-server" }
 spring-cloud-starter-gateway = { module = "org.springframework.cloud:spring-cloud-starter-gateway"}
 spring-cloud-starter-bootstrap = { module = "org.springframework.cloud:spring-cloud-starter-bootstrap"}
+micrometer = {module = "io.micrometer:micrometer-registry-prometheus"}
+micrometer-core = {module = "io.micrometer:micrometer-core"}
 spring-cloud-starter-loadbalancer = { module = "org.springframework.cloud:spring-cloud-starter-loadbalancer"}
 spring-cloud-starter-consul-discovery = { module = "org.springframework.cloud:spring-cloud-starter-consul-discovery"}
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }

@@ -6,6 +6,7 @@ spring:
       server:
         git:
           uri: https://github.com/bereketabInnowise/config-repo
+#          uri: file://${user.home}/config-repo-local
           clone-on-start: true
 management:
   endpoints:

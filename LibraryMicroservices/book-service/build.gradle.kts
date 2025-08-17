@@ -13,6 +13,8 @@ dependencies {
     implementation(libs.liquibase)
     implementation(libs.resilience4j.spring.boot3)
     implementation(libs.jjwt.api)
+    implementation(libs.micrometer)
+    implementation(libs.micrometer.core)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
 
