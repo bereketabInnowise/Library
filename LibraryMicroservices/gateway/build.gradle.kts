@@ -7,6 +7,8 @@ dependencies {
     implementation(libs.spring.boot.starter.security)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.resilience4j.spring.boot3)
+    implementation(libs.micrometer)
+    implementation(libs.micrometer.core)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
